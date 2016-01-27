@@ -43,7 +43,8 @@ public class RunMain {
 
 		ApplicationContext ctx = 
 			      new ClassPathXmlApplicationContext("mvc-config.xml");
-		DeviceInfoService objDeviceInfoService = 
+		
+	/*	DeviceInfoService objDeviceInfoService = 
 			      (DeviceInfoService)ctx.getBean("DeviceInfoServiceImpl");
 		
 		ScheduleMasterService objScheduleMasterService = 
@@ -94,7 +95,7 @@ public class RunMain {
 					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
 				}
 			}
-		}
+		}*/
 			
 	}
 	
