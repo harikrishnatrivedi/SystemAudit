@@ -8,8 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.systemaudit.dao.ScheduleMasterDAO;
 import org.systemaudit.model.ScheduleMaster;
 
-@Service
-
+@Service("ScheduleMasterServiceImpl")
 @Transactional
 public class ScheduleMasterServiceImpl implements ScheduleMasterService {
 	
@@ -28,8 +27,8 @@ public class ScheduleMasterServiceImpl implements ScheduleMasterService {
 		return this.scheduleMasterDAO.listScheduleMaster();
 	}
 
-	public ScheduleMaster getScheduleMasterByDeviceComputerName(String paramStringComputerName){
-		return this.scheduleMasterDAO.getScheduleMasterByDeviceComputerName(paramStringComputerName);
+	public ScheduleMaster getScheduleMasterByDeviceComputerId(int paramIntComputerid){
+		return this.scheduleMasterDAO.getScheduleMasterByDeviceComputerId(paramIntComputerid);
 	}
 	
 	public ScheduleMaster getScheduleMasterById(int paramIntScheduleMasterId) {

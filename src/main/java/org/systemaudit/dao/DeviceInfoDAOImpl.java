@@ -2,10 +2,10 @@ package org.systemaudit.dao;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.systemaudit.model.DeviceInfo;
 
-@Service
+@Repository("DeviceInfoDAOImpl")
 public class DeviceInfoDAOImpl extends GenericDAOImpl<DeviceInfo, Integer> implements DeviceInfoDAO {
 	public void addDeviceInfo(DeviceInfo paramObjDeviceInfo) {
 		getCurrentSession().persist(paramObjDeviceInfo);

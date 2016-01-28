@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.ManyToOne;
 import javax.swing.filechooser.FileSystemView;
 
 import org.joda.time.DateTime;
@@ -44,7 +45,7 @@ public class RunMain {
 		ApplicationContext ctx = 
 			      new ClassPathXmlApplicationContext("mvc-config.xml");
 		
-	/*	DeviceInfoService objDeviceInfoService = 
+		DeviceInfoService objDeviceInfoService = 
 			      (DeviceInfoService)ctx.getBean("DeviceInfoServiceImpl");
 		
 		ScheduleMasterService objScheduleMasterService = 
@@ -55,14 +56,16 @@ public class RunMain {
 		
 		ScheduleOperationService objScheduleOperationService = 
 				(ScheduleOperationService)ctx.getBean("ScheduleOperationServiceImpl");
-		
+		String compName="";
+		try{compName=InetAddress.getLocalHost().getHostName();}catch(Exception ex){return;}
 		DeviceInfo objDeviceInfo;
 		ScheduleMaster objScheduleMaster;
-		objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(System.getProperty("user"));
+		objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(compName);
 		if(objDeviceInfo==null){
 			objDeviceInfo=new DeviceInfo();
 			try{
-				objDeviceInfo.setCompName(System.getProperty(InetAddress.getLocalHost().getHostName()));
+				System.out.println("InetAddress.getLocalHost().getHostName() : "+InetAddress.getLocalHost().getHostName());
+				objDeviceInfo.setCompName(InetAddress.getLocalHost().getHostName());
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
@@ -74,29 +77,36 @@ public class RunMain {
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
+			System.out.println("after Save : objDeviceInfo : "+objDeviceInfo);
 			objScheduleMaster=new ScheduleMaster();
+			objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(compName);
 			objScheduleMaster.setObjDeviceInfo(objDeviceInfo);
 			objScheduleMaster.setSchCreatedBy("FirstTime");
 			objScheduleMaster.setSchCreatedDate(new Date());
-			objScheduleMaster.setSchRunDateTime(new DateTime());
+			objScheduleMaster.setSchRunDateTime(new Date());
 			objScheduleMaster.setSchStatus("P");
+			System.out.println("beforeInsert : objScheduleMaster : "+objScheduleMaster);
 			objScheduleMasterService.addScheduleMaster(objScheduleMaster);
 		}else{
-			objScheduleMaster=objScheduleMasterService.getScheduleMasterByDeviceComputerName(objDeviceInfo.getCompName());
+			objScheduleMaster=objScheduleMasterService.getScheduleMasterByDeviceComputerId(objDeviceInfo.getCompId());
+			System.out.println("Else objScheduleMaster : "+objScheduleMaster);
 			if(objScheduleMaster!=null){
-				if(objScheduleMaster.getSchRunDateTime().isBeforeNow() && (objScheduleMaster.getSchStatus().compareToIgnoreCase("P")==0||objScheduleMaster.getSchStatus().compareToIgnoreCase("F")==0)){
+				if(objScheduleMaster.getSchRunDateTime().before(new Date()) && (objScheduleMaster.getSchStatus().compareToIgnoreCase("P")==0||objScheduleMaster.getSchStatus().compareToIgnoreCase("F")==0)){
+					objFileDetailsService.removeFileDetailsByDeviceInfoId(objDeviceInfo.getCompId());
 					objDeviceInfo=getDriveDetails(objDeviceInfo);
+					System.out.println("before list objScheduleMaster : "+objScheduleMaster);
 					try{
-						objDeviceInfoService.addDeviceInfo(objDeviceInfo);
+						objDeviceInfoService.updateDeviceInfo(objDeviceInfo);
 						objScheduleMaster.setSchStatus("S");
 					}catch(Exception ex){
 						objScheduleMaster.setSchStatus("F");
+						ex.printStackTrace();
 					}
+					
 					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
 				}
 			}
-		}*/
-			
+		}
 	}
 	
 	private static DeviceInfo getDriveDetails(DeviceInfo paramObjDeviceInfo){
@@ -125,19 +135,22 @@ public class RunMain {
 	static void list(File f, String root, DeviceInfo paramObjDeviceInfo) {
 		if (f.isFile()) {
 			try {
+				//System.out.println("File Name : "+f.getAbsolutePath());
 				objFileDetails=new FileDetails();
 				objFileDetails.setObjDeviceInfo(paramObjDeviceInfo);
 				objFileDetails.setFileDrive(root);
+				
 				if (!(f.getName().lastIndexOf('.') == -1))
-					objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.')));
+					if(f.getName().substring(f.getName().lastIndexOf('.')).length()>10)
+						objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.'),(f.getName().lastIndexOf('.')+10)));
+					else
+						objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.')));
+				
 				objFileDetails.setFileFullPath(f.getAbsolutePath());
-				objFileDetails.setFileName(f.getName().substring(f.getName().lastIndexOf("/")));
+				objFileDetails.setFileName(f.getName());
 				objFileDetails.setFileSize(f.length());
 				lstObjFileDetails.add(objFileDetails);
 			} catch (Exception e) {
-				System.out.println("in LIST method start : ");
-				e.printStackTrace();
-				System.out.println("in LIST method end :");
 			}
 			return;
 		} else {
@@ -145,14 +158,11 @@ public class RunMain {
 												// directory
 			for (File t : dir_list)
 				try {
+					
 					if (!Files.readAttributes(t.toPath(), DosFileAttributes.class).isSystem())
 						list(t, root, paramObjDeviceInfo); // calls list for each content of
 										// directory
 				} catch (Exception e) {
-					System.out.println("exception of else calling list start :");
-					// System.out.println("Error:"+fsv.getSystemTypeDescription(t));
-					e.printStackTrace();
-					System.out.println("exception  of else calling list end :");
 				}
 		}
 	}

@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.systemaudit.model.EmployeeDetails;
 
-@Service
+
 public class EmployeeDetailsDAOImpl
   extends GenericDAOImpl<EmployeeDetails, Integer>
   implements EmployeeDetailsDAO

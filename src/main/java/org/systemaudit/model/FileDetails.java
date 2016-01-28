@@ -3,6 +3,7 @@
  */
 package org.systemaudit.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -40,7 +41,7 @@ public class FileDetails {
 	private String fileName;
 
 	@Size(max = 10)
-	@Column(name = "FILE_EXTENSION", nullable = false)
+	@Column(name = "FILE_EXTENSION", nullable = true)
 	private String fileExtension;
 
 	@Size(max = 10)
@@ -50,18 +51,28 @@ public class FileDetails {
 	@Column(name = "FILE_SIZE", nullable = true)
 	private long fileSize;
 
-	@Column(name = "FILE", nullable = true)
-	@Size(max = 30)
-	private String empDesignation;
+	@Size(max = 10)
+	@Column(name = "FILE_STATUS", nullable = false, columnDefinition="character varying(10) default 'GOOD'")
+	private String fileStatus;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "FILE_COMP_ID", referencedColumnName = "COMP_ID")
 	private DeviceInfo objDeviceInfo;
 
-	@ManyToOne
-	@JoinColumn(name = "FILE_SCH_ID", referencedColumnName = "SCH_ID")
-	private ScheduleMaster objScheduleMaster;
-	
+	/**
+	 * @return the fileStatus
+	 */
+	public String getFileStatus() {
+		return fileStatus;
+	}
+
+	/**
+	 * @param fileStatus the fileStatus to set
+	 */
+	public void setFileStatus(String fileStatus) {
+		this.fileStatus = fileStatus;
+	}
+
 	/**
 	 * @return the fileId
 	 */
@@ -150,21 +161,6 @@ public class FileDetails {
 	 */
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
-	}
-
-	/**
-	 * @return the empDesignation
-	 */
-	public String getEmpDesignation() {
-		return empDesignation;
-	}
-
-	/**
-	 * @param empDesignation
-	 *            the empDesignation to set
-	 */
-	public void setEmpDesignation(String empDesignation) {
-		this.empDesignation = empDesignation;
 	}
 
 	/**

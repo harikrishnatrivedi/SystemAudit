@@ -5,6 +5,7 @@ package org.systemaudit.model;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -57,10 +58,10 @@ public class DeviceInfo {
 	@JoinColumn(name = "COMP_GRP_ID", referencedColumnName = "GRP_ID")
 	private DeviceGroup objDeviceGroup;
 
-	@OneToMany(mappedBy = "objDeviceInfo")
+	@OneToMany(mappedBy = "objDeviceInfo",cascade = CascadeType.ALL)
 	private List<FileDetails> lstObjFileDetails;
 
-	@OneToMany(mappedBy = "objDeviceInfo")
+	@OneToMany(mappedBy = "objDeviceInfo",cascade = CascadeType.ALL)
 	private List<DriveInfo> lstObjDriveInfo;
 
 	/**
@@ -202,7 +203,7 @@ public class DeviceInfo {
 	public String toString() {
 		return "objDeviceInfo [compId=" + compId + ", compName=" + compName + ", compUserName=" + compUserName
 				+ ", compOsName=" + compOsName + ", compProcessorType=" + compProcessorType + ", objDeviceGroup="
-				+ objDeviceGroup + ", lstObjFileDetails=" + lstObjFileDetails + ", lstObjScheduleMaster="
-				+ lstObjScheduleMaster + "]";
+				+ objDeviceGroup + /*", lstObjFileDetails=" + lstObjFileDetails + ", lstObjScheduleMaster="
+				+ lstObjScheduleMaster + */"]";
 	}
 }

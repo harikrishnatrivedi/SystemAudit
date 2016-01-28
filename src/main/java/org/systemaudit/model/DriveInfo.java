@@ -3,6 +3,7 @@
  */
 package org.systemaudit.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,7 +35,7 @@ public class DriveInfo {
 	@Column(name = "DRV_LETTER", nullable = false)
 	private String drvLetter;
 
-	@Size(max = 10)
+	@Size(max = 50)
 	@Column(name = "DRV_TYPE", nullable = false)
 	private String drvType;
 
@@ -47,7 +48,7 @@ public class DriveInfo {
 	@Column(name = "DRV_USABLE_SPACE", nullable = true)
 	private long drvUsableSpace;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "DRV_COMP_ID", referencedColumnName = "COMP_ID")
 	private DeviceInfo objDeviceInfo;
 

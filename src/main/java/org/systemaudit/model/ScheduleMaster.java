@@ -6,6 +6,7 @@ package org.systemaudit.model;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -44,7 +45,7 @@ public class ScheduleMaster {
 	private Date schCreatedDate;
 
 	@Column(name = "SCH_CREATED_BY", nullable = true)
-	@Size(max = 8)
+	@Size(max = 15)
 	private String schCreatedBy;
 
 	@Column(name = "SCH_STATUS", nullable = true)
@@ -186,6 +187,6 @@ public class ScheduleMaster {
 	public String toString() {
 		return "objDeviceInfo [schId=" + schId + ", schRunDateTime=" + schRunDateTime + ", schCreatedDate="
 				+ schCreatedDate + ", schCreatedBy=" + schCreatedBy + ", objDeviceInfo=" + objDeviceInfo
-				+ ", lstObjFileDetails=" + lstObjFileDetails + ", objDeviceGroup=" + objDeviceGroup + "]";
+				/*+ ", lstObjFileDetails=" + lstObjFileDetails*/ + ", objDeviceGroup=" + objDeviceGroup + "]";
 	}
 }

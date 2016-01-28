@@ -1,12 +1,11 @@
 package org.systemaudit.serviceDao;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.systemaudit.dao.GenericDAOImpl;
 import org.systemaudit.dao.ScheduleMasterDAO;
-import org.systemaudit.model.ScheduleMaster;
 
-@Service
+@Repository("ScheduleOperationServiceDAOImpl")
 public class ScheduleOperationServiceDAOImpl
   extends GenericDAOImpl<Object, Integer>
   implements ScheduleOperationServiceDAO

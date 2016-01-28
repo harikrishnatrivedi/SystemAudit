@@ -2,10 +2,16 @@ package org.systemaudit.dao;
 
 import java.util.List;
 
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.Transformers;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.systemaudit.model.ScheduleMaster;
 
-@Service
+@Repository("ScheduleMasterDAOImpl")
 public class ScheduleMasterDAOImpl extends GenericDAOImpl<ScheduleMaster, Integer> implements ScheduleMasterDAO {
 	public void addScheduleMaster(ScheduleMaster paramObjScheduleMaster) {
 		getCurrentSession().persist(paramObjScheduleMaster);
@@ -20,10 +26,29 @@ public class ScheduleMasterDAOImpl extends GenericDAOImpl<ScheduleMaster, Intege
 		return getCurrentSession().createQuery("from ScheduleMaster").list();
 	}
 
-	public ScheduleMaster getScheduleMasterByDeviceComputerName(String paramStringComputerName) {
-		return (ScheduleMaster) getCurrentSession()
-				.createQuery("from ScheduleMaster where objDeviceInfo.compName = :compName and schId=max(schId)")
-				.setParameter("compName", paramStringComputerName).uniqueResult();
+	public ScheduleMaster getScheduleMasterByDeviceComputerId(int paramIntComputerId) {
+		
+		Criteria criteria=getCurrentSession().createCriteria(ScheduleMaster.class).setFetchMode("objDeviceInfo", FetchMode.JOIN);
+		criteria.add(Restrictions.eq("objDeviceInfo.id", paramIntComputerId));
+		criteria.setProjection(
+				Projections.projectionList()
+				.add(Projections.groupProperty("schId").as("schId"))
+				.add(Projections.groupProperty("schRunDateTime").as("schRunDateTime"))
+				.add(Projections.groupProperty("schCreatedDate").as("schCreatedDate"))
+				.add(Projections.groupProperty("schCreatedBy").as("schCreatedBy"))
+				.add(Projections.groupProperty("objDeviceInfo").as("objDeviceInfo"))
+				.add(Projections.groupProperty("objDeviceGroup").as("objDeviceGroup"))
+				.add(Projections.groupProperty("schStatus").as("schStatus"))
+		  		.add(Projections.max("schId"))
+				);
+		return (ScheduleMaster)criteria.setResultTransformer(Transformers.aliasToBean(ScheduleMaster.class)).uniqueResult();
+		/*return (ScheduleMaster) getCurrentSession().createCriteria(ScheduleMaster.class).setFetchMode("objDeviceInfo", FetchMode.JOIN)
+				  .add(Restrictions.eq("objDeviceInfo.compName", paramStringComputerName))
+				  .setProjection(
+				  		Projections.projectionList()
+				  		.add(Projections.groupProperty("schId"))
+				  		.add(Projections.max("schId"))
+				  	).setResultTransformer(Transformers.aliasToBean(ScheduleMaster.class)).uniqueResult();*/
 	}
 
 	public ScheduleMaster getScheduleMasterById(int paramIntId) {

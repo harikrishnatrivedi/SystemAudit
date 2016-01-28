@@ -8,8 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.systemaudit.dao.DeviceInfoDAO;
 import org.systemaudit.model.DeviceInfo;;
 
-@Service
-
+@Service("DeviceInfoServiceImpl")
 @Transactional
 public class DeviceInfoServiceImpl implements DeviceInfoService {
 	

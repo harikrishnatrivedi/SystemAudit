@@ -8,8 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.systemaudit.dao.FileDetailsDAO;
 import org.systemaudit.model.FileDetails;;
 
-@Service
-
+@Service("FileDetailsServiceImpl")
 @Transactional
 public class FileDetailsServiceImpl implements FileDetailsService {
 	

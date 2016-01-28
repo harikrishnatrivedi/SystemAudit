@@ -12,7 +12,7 @@ public abstract interface ScheduleMasterService
   
   public abstract List<ScheduleMaster> listScheduleMaster();
   
-  public abstract ScheduleMaster getScheduleMasterByDeviceComputerName(String paramStringComputerName);
+  public abstract ScheduleMaster getScheduleMasterByDeviceComputerId(int paramIntComputerId);
   
   public abstract ScheduleMaster getScheduleMasterById(int paramIntScheduleMasterId);
   

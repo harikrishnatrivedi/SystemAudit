@@ -35,16 +35,17 @@
 	    <property name="hibernateProperties">
 	        <value>
 	              hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-	              hibernate.hbm2ddl.auto=create-drop
-	              hibernate.show_sql=true
-	              hibernate.format_sql=true
+	              hibernate.hbm2ddl.auto=update
+	              hibernate.show_sql=false
+	              hibernate.format_sql=false
 	        </value>
 	    </property>
 	</bean>
 
 	<tx:annotation-driven />
-	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-	    <property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
 
 </beans>

@@ -58,7 +58,16 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<version>${servlet.version}</version>
 		</dependency>
-
+		<dependency>
+		   <groupId>javax.el</groupId>
+		   <artifactId>javax.el-api</artifactId>
+		   <version>2.2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.web</groupId>
+			<artifactId>el-impl</artifactId>
+			<version>2.2</version>
+		</dependency>
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
 			<artifactId>jsp-api</artifactId>
@@ -103,7 +112,11 @@
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator.version}</version>
         </dependency>
-		
+		<dependency>
+		    <groupId>org.apache.servicemix.bundles</groupId>
+		    <artifactId>org.apache.servicemix.bundles.hibernate-validator</artifactId>
+		    <version>5.0.2.Final_1</version>
+		</dependency>
 		<!-- Test Artifacts -->
 		<dependency>
 			<groupId>org.springframework</groupId>

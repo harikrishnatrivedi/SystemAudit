@@ -3,10 +3,11 @@ package org.systemaudit.dao;
 import java.util.List;
 
 import org.hibernate.Query;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.systemaudit.model.FileDetails;
 
-@Service
+@Repository("FileDetailsDAOImpl")
 public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> implements FileDetailsDAO {
 	public void addFileDetails(FileDetails paramObjFileDetails) {
 		getCurrentSession().persist(paramObjFileDetails);
