@@ -37,7 +37,7 @@ public class ScheduleMaster {
 
 	@Column(name = "SCH_RUN_DATETIME", nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
-	private DateTime schRunDateTime;
+	private Date schRunDateTime;
 
 	@Column(name = "SCH_CREATED_DATE", nullable = true)
 	@Temporal(TemporalType.TIMESTAMP)
@@ -80,7 +80,7 @@ public class ScheduleMaster {
 	/**
 	 * @return the schRunDateTime
 	 */
-	public DateTime getSchRunDateTime() {
+	public Date getSchRunDateTime() {
 		return schRunDateTime;
 	}
 
@@ -88,7 +88,7 @@ public class ScheduleMaster {
 	 * @param schRunDateTime
 	 *            the schRunDateTime to set
 	 */
-	public void setSchRunDateTime(DateTime schRunDateTime) {
+	public void setSchRunDateTime(Date schRunDateTime) {
 		this.schRunDateTime = schRunDateTime;
 	}
 

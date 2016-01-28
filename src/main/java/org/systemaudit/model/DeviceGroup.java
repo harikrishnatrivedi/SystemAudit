@@ -39,8 +39,83 @@ public class DeviceGroup {
 	@OneToMany(mappedBy = "objDeviceGroup")
 	private List<DeviceInfo> lstObjDeviceInfo;
 
-	@OneToMany(mappedBy = "objScheduleMaster")
+	@OneToMany(mappedBy = "objDeviceGroup")
 	private List<ScheduleMaster> lstObjScheduleMaster;
+
+	/**
+	 * @return the grpId
+	 */
+	public int getGrpId() {
+		return grpId;
+	}
+
+	/**
+	 * @param grpId
+	 *            the grpId to set
+	 */
+	public void setGrpId(int grpId) {
+		this.grpId = grpId;
+	}
+
+	/**
+	 * @return the grpName
+	 */
+	public String getGrpName() {
+		return grpName;
+	}
+
+	/**
+	 * @param grpName
+	 *            the grpName to set
+	 */
+	public void setGrpName(String grpName) {
+		this.grpName = grpName;
+	}
+
+	/**
+	 * @return the grpDescription
+	 */
+	public String getGrpDescription() {
+		return grpDescription;
+	}
+
+	/**
+	 * @param grpDescription
+	 *            the grpDescription to set
+	 */
+	public void setGrpDescription(String grpDescription) {
+		this.grpDescription = grpDescription;
+	}
+
+	/**
+	 * @return the lstObjDeviceInfo
+	 */
+	public List<DeviceInfo> getLstObjDeviceInfo() {
+		return lstObjDeviceInfo;
+	}
+
+	/**
+	 * @param lstObjDeviceInfo
+	 *            the lstObjDeviceInfo to set
+	 */
+	public void setLstObjDeviceInfo(List<DeviceInfo> lstObjDeviceInfo) {
+		this.lstObjDeviceInfo = lstObjDeviceInfo;
+	}
+
+	/**
+	 * @return the lstObjScheduleMaster
+	 */
+	public List<ScheduleMaster> getLstObjScheduleMaster() {
+		return lstObjScheduleMaster;
+	}
+
+	/**
+	 * @param lstObjScheduleMaster
+	 *            the lstObjScheduleMaster to set
+	 */
+	public void setLstObjScheduleMaster(List<ScheduleMaster> lstObjScheduleMaster) {
+		this.lstObjScheduleMaster = lstObjScheduleMaster;
+	}
 
 	@Override
 	public String toString() {

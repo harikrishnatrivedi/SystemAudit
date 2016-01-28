@@ -50,7 +50,7 @@ public class DeviceInfo {
 	private String compProcessorType;
 
 	@OneToMany(mappedBy = "objDeviceInfo")
-	@JoinColumn(name = "COMP_SCH_ID", referencedColumnName = "SCH_ID")
+	@Column(name = "COMP_SCH_ID")
 	private List<ScheduleMaster> lstObjScheduleMaster;
 
 	@ManyToOne
@@ -60,7 +60,7 @@ public class DeviceInfo {
 	@OneToMany(mappedBy = "objDeviceInfo")
 	private List<FileDetails> lstObjFileDetails;
 
-	@OneToMany(mappedBy = "objDriveInfo")
+	@OneToMany(mappedBy = "objDeviceInfo")
 	private List<DriveInfo> lstObjDriveInfo;
 
 	/**

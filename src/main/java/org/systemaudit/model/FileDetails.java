@@ -58,6 +58,10 @@ public class FileDetails {
 	@JoinColumn(name = "FILE_COMP_ID", referencedColumnName = "COMP_ID")
 	private DeviceInfo objDeviceInfo;
 
+	@ManyToOne
+	@JoinColumn(name = "FILE_SCH_ID", referencedColumnName = "SCH_ID")
+	private ScheduleMaster objScheduleMaster;
+	
 	/**
 	 * @return the fileId
 	 */
