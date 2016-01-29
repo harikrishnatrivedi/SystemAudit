@@ -14,8 +14,10 @@ public abstract interface FileDetailsDAO
   
   public abstract List<FileDetails> listFileDetails();
   
-  public List<FileDetails> listFileDetailsByDeviceInfoId(int paramIntDeviceInfoId);
-  
+  public abstract List<FileDetails> listFileDetailsByDeviceInfoId(int paramIntDeviceInfoId);
+
+  public abstract List<FileDetails> getSuspiciousFileDetailsByDeviceInfoId(int paramIntDeviceInfoId);
+	
   public abstract FileDetails getFileDetailsById(int paramIntId);
   
   public abstract void removeFileDetails(int paramIntId);

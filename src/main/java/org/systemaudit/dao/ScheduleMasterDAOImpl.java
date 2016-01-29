@@ -42,13 +42,9 @@ public class ScheduleMasterDAOImpl extends GenericDAOImpl<ScheduleMaster, Intege
 		  		.add(Projections.max("schId"))
 				);
 		return (ScheduleMaster)criteria.setResultTransformer(Transformers.aliasToBean(ScheduleMaster.class)).uniqueResult();
-		/*return (ScheduleMaster) getCurrentSession().createCriteria(ScheduleMaster.class).setFetchMode("objDeviceInfo", FetchMode.JOIN)
-				  .add(Restrictions.eq("objDeviceInfo.compName", paramStringComputerName))
-				  .setProjection(
-				  		Projections.projectionList()
-				  		.add(Projections.groupProperty("schId"))
-				  		.add(Projections.max("schId"))
-				  	).setResultTransformer(Transformers.aliasToBean(ScheduleMaster.class)).uniqueResult();*/
+/*		return (ScheduleMaster) getCurrentSession().createQuery("from ScheduleMaster where objDeviceInfo = :compId")
+				.setParameter("compId", paramIntComputerId)
+				.uniqueResult();*/
 	}
 
 	public ScheduleMaster getScheduleMasterById(int paramIntId) {

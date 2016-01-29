@@ -3,7 +3,6 @@ org\systemaudit\service\ScheduleOperationServiceImpl.class
 org\systemaudit\dao\FileDetailsDAO.class
 org\systemaudit\dao\ScheduleMasterDAOImpl.class
 org\systemaudit\model\EmployeeDetails.class
-org\systemaudit\runmain\TestSystemObject.class
 org\systemaudit\model\ScheduleMaster.class
 org\systemaudit\model\FileDetails.class
 org\systemaudit\runmain\RunMain.class

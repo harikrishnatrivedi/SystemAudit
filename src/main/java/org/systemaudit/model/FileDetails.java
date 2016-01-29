@@ -53,12 +53,16 @@ public class FileDetails {
 
 	@Size(max = 10)
 	@Column(name = "FILE_STATUS", nullable = false, columnDefinition="character varying(10) default 'GOOD'")
-	private String fileStatus;
+	private String fileStatus="GOOD";
 
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "FILE_COMP_ID", referencedColumnName = "COMP_ID")
 	private DeviceInfo objDeviceInfo;
 
+	@ManyToOne
+	@JoinColumn(name = "FILE_SCH_ID", referencedColumnName = "SCH_ID")
+	private ScheduleMaster objScheduleMaster;
+	
 	/**
 	 * @return the fileStatus
 	 */

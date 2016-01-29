@@ -14,6 +14,7 @@ import java.util.List;
 import javax.persistence.ManyToOne;
 import javax.swing.filechooser.FileSystemView;
 
+import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -35,6 +36,21 @@ public class RunMain {
 	public static FileDetails objFileDetails;
 	public static List<FileDetails> lstObjFileDetails = new ArrayList<FileDetails>();
 	
+	private static ApplicationContext ctx = 
+		      new ClassPathXmlApplicationContext("mvc-config.xml");
+	
+	private static DeviceInfoService objDeviceInfoService = 
+		      (DeviceInfoService)ctx.getBean("DeviceInfoServiceImpl");
+	
+	private static ScheduleMasterService objScheduleMasterService = 
+		      (ScheduleMasterService)ctx.getBean("ScheduleMasterServiceImpl");
+	
+	private static FileDetailsService objFileDetailsService = 
+		      (FileDetailsService)ctx.getBean("FileDetailsServiceImpl");
+	
+	ScheduleOperationService objScheduleOperationService = 
+			(ScheduleOperationService)ctx.getBean("ScheduleOperationServiceImpl");
+	
 	/**
 	 * @param args
 	 */
@@ -42,69 +58,90 @@ public class RunMain {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-		ApplicationContext ctx = 
-			      new ClassPathXmlApplicationContext("mvc-config.xml");
 		
-		DeviceInfoService objDeviceInfoService = 
-			      (DeviceInfoService)ctx.getBean("DeviceInfoServiceImpl");
-		
-		ScheduleMasterService objScheduleMasterService = 
-			      (ScheduleMasterService)ctx.getBean("ScheduleMasterServiceImpl");
-		
-		FileDetailsService objFileDetailsService = 
-			      (FileDetailsService)ctx.getBean("FileDetailsServiceImpl");
-		
-		ScheduleOperationService objScheduleOperationService = 
-				(ScheduleOperationService)ctx.getBean("ScheduleOperationServiceImpl");
 		String compName="";
 		try{compName=InetAddress.getLocalHost().getHostName();}catch(Exception ex){return;}
 		DeviceInfo objDeviceInfo;
-		ScheduleMaster objScheduleMaster;
 		objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(compName);
 		if(objDeviceInfo==null){
-			objDeviceInfo=new DeviceInfo();
-			try{
-				System.out.println("InetAddress.getLocalHost().getHostName() : "+InetAddress.getLocalHost().getHostName());
-				objDeviceInfo.setCompName(InetAddress.getLocalHost().getHostName());
-			}catch(Exception ex){
-				ex.printStackTrace();
-			}
-			objDeviceInfo.setCompOsName(System.getProperty("os.name"));
-			objDeviceInfo.setCompProcessorType(System.getProperty("sun.cpu.isalist"));
-			objDeviceInfo.setCompUserName(System.getProperty("user.name"));
-			try {
-				objDeviceInfoService.addDeviceInfo(objDeviceInfo);
-			}catch(Exception ex){
-				ex.printStackTrace();
-			}
-			System.out.println("after Save : objDeviceInfo : "+objDeviceInfo);
-			objScheduleMaster=new ScheduleMaster();
-			objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(compName);
-			objScheduleMaster.setObjDeviceInfo(objDeviceInfo);
-			objScheduleMaster.setSchCreatedBy("FirstTime");
-			objScheduleMaster.setSchCreatedDate(new Date());
-			objScheduleMaster.setSchRunDateTime(new Date());
-			objScheduleMaster.setSchStatus("P");
-			System.out.println("beforeInsert : objScheduleMaster : "+objScheduleMaster);
-			objScheduleMasterService.addScheduleMaster(objScheduleMaster);
+			firstTimeEntry(compName);
 		}else{
-			objScheduleMaster=objScheduleMasterService.getScheduleMasterByDeviceComputerId(objDeviceInfo.getCompId());
-			System.out.println("Else objScheduleMaster : "+objScheduleMaster);
-			if(objScheduleMaster!=null){
-				if(objScheduleMaster.getSchRunDateTime().before(new Date()) && (objScheduleMaster.getSchStatus().compareToIgnoreCase("P")==0||objScheduleMaster.getSchStatus().compareToIgnoreCase("F")==0)){
-					objFileDetailsService.removeFileDetailsByDeviceInfoId(objDeviceInfo.getCompId());
-					objDeviceInfo=getDriveDetails(objDeviceInfo);
-					System.out.println("before list objScheduleMaster : "+objScheduleMaster);
-					try{
-						objDeviceInfoService.updateDeviceInfo(objDeviceInfo);
-						objScheduleMaster.setSchStatus("S");
-					}catch(Exception ex){
-						objScheduleMaster.setSchStatus("F");
-						ex.printStackTrace();
-					}
-					
-					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
+			runScheduleIfRequired(objDeviceInfo);
+			moveSuspiciousFiles(objDeviceInfo);
+		}
+	}
+	
+	private static void moveSuspiciousFiles(DeviceInfo paramObjDeviceInfo){
+		List<FileDetails> lstObjDeviceInfo=objFileDetailsService.getSuspiciousFileDetailsByDeviceInfoId(paramObjDeviceInfo.getCompId());
+		
+		File newDir = new File("\\\\192.168.0.215\\Temp\\SystemAudit\\"+paramObjDeviceInfo.getCompName());
+		
+		if(!newDir.exists()){
+			try{
+			newDir.mkdir();
+			}catch(Exception ex){
+				ex.printStackTrace();
+				return;
+			}
+		}
+		for(FileDetails objFileDetails : lstObjDeviceInfo){
+			try{
+			FileUtils.copyFile(new File(objFileDetails.getFileFullPath()), new File(newDir.getPath()+"\\"+objFileDetails.getFileName()));
+			objFileDetails.setFileStatus("Transfered");
+			objFileDetailsService.updateFileDetails(objFileDetails);
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	private static void firstTimeEntry(String paramStrComputerName){
+		DeviceInfo objDeviceInfo;
+		objDeviceInfo=new DeviceInfo();
+		try{
+			System.out.println("InetAddress.getLocalHost().getHostName() : "+InetAddress.getLocalHost().getHostName());
+			objDeviceInfo.setCompName(InetAddress.getLocalHost().getHostName());
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		objDeviceInfo.setCompOsName(System.getProperty("os.name"));
+		objDeviceInfo.setCompProcessorType(System.getProperty("sun.cpu.isalist"));
+		objDeviceInfo.setCompUserName(System.getProperty("user.name"));
+		try {
+			objDeviceInfoService.addDeviceInfo(objDeviceInfo);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		ScheduleMaster objScheduleMaster=new ScheduleMaster();
+		objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(paramStrComputerName);
+		objScheduleMaster.setObjDeviceInfo(objDeviceInfo);
+		objScheduleMaster.setSchCreatedBy("FirstTime");
+		objScheduleMaster.setSchCreatedDate(new Date());
+		objScheduleMaster.setSchRunDateTime(new Date());
+		objScheduleMaster.setSchStatus("P");
+		try {
+			objScheduleMasterService.addScheduleMaster(objScheduleMaster);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	private static void runScheduleIfRequired(DeviceInfo paramObjObjDeviceInfo){
+		ScheduleMaster objScheduleMaster=objScheduleMasterService.getScheduleMasterByDeviceComputerId(paramObjObjDeviceInfo.getCompId());
+		System.out.println("Else objScheduleMaster : "+objScheduleMaster);
+		if(objScheduleMaster!=null){
+			if(objScheduleMaster.getSchRunDateTime().before(new Date()) && (objScheduleMaster.getSchStatus().compareToIgnoreCase("P")==0||objScheduleMaster.getSchStatus().compareToIgnoreCase("F")==0)){
+				objFileDetailsService.removeFileDetailsByDeviceInfoId(paramObjObjDeviceInfo.getCompId());
+				paramObjObjDeviceInfo=getDriveDetails(paramObjObjDeviceInfo);
+				System.out.println("before list objScheduleMaster : "+objScheduleMaster);
+				try{
+					objDeviceInfoService.updateDeviceInfo(paramObjObjDeviceInfo);
+					objScheduleMaster.setSchStatus("S");
+				}catch(Exception ex){
+					objScheduleMaster.setSchStatus("F");
+					ex.printStackTrace();
 				}
+				objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
 			}
 		}
 	}
@@ -132,7 +169,7 @@ public class RunMain {
 			return paramObjDeviceInfo;
 		}
 	
-	static void list(File f, String root, DeviceInfo paramObjDeviceInfo) {
+	private static void list(File f, String root, DeviceInfo paramObjDeviceInfo) {
 		if (f.isFile()) {
 			try {
 				//System.out.println("File Name : "+f.getAbsolutePath());

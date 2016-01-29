@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.hibernate.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 import org.systemaudit.model.FileDetails;
 
 @Repository("FileDetailsDAOImpl")
@@ -32,6 +31,14 @@ public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> imp
 		return (FileDetails) getCurrentSession().load(FileDetails.class, new Integer(paramIntId));
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoId(int paramIntDeviceInfoId){
+		return getCurrentSession().createQuery("from FileDetails where objDeviceInfo.compId= :compId and fileStatus= :fileStatus")
+				.setParameter("compId", paramIntDeviceInfoId)
+				.setParameter("fileStatus", "Suspicious")
+				.list();
+	}
+	
 	public void removeFileDetails(int paramIntId) {
 		FileDetails ed = (FileDetails) getCurrentSession().load(FileDetails.class, new Integer(paramIntId));
 		if (ed != null) {
@@ -41,7 +48,7 @@ public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> imp
 
 	public void removeFileDetailsByDeviceInfoId(int paramIntDeviceInfoId) {
 		Query query = getCurrentSession()
-				.createSQLQuery("delete from FileDetails where objDeviceInfo.compId= :compId");
+				.createQuery("delete FileDetails where objDeviceInfo.compId= :compId");
 		query.setInteger("compId", paramIntDeviceInfoId);
 		query.executeUpdate();
 	}
