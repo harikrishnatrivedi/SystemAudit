@@ -30,7 +30,9 @@ public class ScheduleMasterDAOImpl extends GenericDAOImpl<ScheduleMaster, Intege
 		
 		Criteria criteria=getCurrentSession().createCriteria(ScheduleMaster.class).setFetchMode("objDeviceInfo", FetchMode.JOIN);
 		criteria.add(Restrictions.eq("objDeviceInfo.id", paramIntComputerId));
-		criteria.setProjection(
+		criteria.add(Restrictions.eq("schStatus", "P"));
+		return (ScheduleMaster)criteria.uniqueResult();
+		/*criteria.setProjection(
 				Projections.projectionList()
 				.add(Projections.groupProperty("schId").as("schId"))
 				.add(Projections.groupProperty("schRunDateTime").as("schRunDateTime"))
@@ -41,7 +43,7 @@ public class ScheduleMasterDAOImpl extends GenericDAOImpl<ScheduleMaster, Intege
 				.add(Projections.groupProperty("schStatus").as("schStatus"))
 		  		.add(Projections.max("schId"))
 				);
-		return (ScheduleMaster)criteria.setResultTransformer(Transformers.aliasToBean(ScheduleMaster.class)).uniqueResult();
+		return (ScheduleMaster)criteria.setResultTransformer(Transformers.aliasToBean(ScheduleMaster.class)).uniqueResult();*/
 /*		return (ScheduleMaster) getCurrentSession().createQuery("from ScheduleMaster where objDeviceInfo = :compId")
 				.setParameter("compId", paramIntComputerId)
 				.uniqueResult();*/

@@ -63,6 +63,22 @@ public class FileDetails {
 	@JoinColumn(name = "FILE_SCH_ID", referencedColumnName = "SCH_ID")
 	private ScheduleMaster objScheduleMaster;
 	
+	
+	
+	/**
+	 * @return the objScheduleMaster
+	 */
+	public ScheduleMaster getObjScheduleMaster() {
+		return objScheduleMaster;
+	}
+
+	/**
+	 * @param objScheduleMaster the objScheduleMaster to set
+	 */
+	public void setObjScheduleMaster(ScheduleMaster objScheduleMaster) {
+		this.objScheduleMaster = objScheduleMaster;
+	}
+
 	/**
 	 * @return the fileStatus
 	 */

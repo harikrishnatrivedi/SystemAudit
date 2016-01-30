@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.ManyToOne;
 import javax.swing.filechooser.FileSystemView;
 
 import org.apache.commons.io.FileUtils;
@@ -54,7 +53,7 @@ public class RunMain {
 	/**
 	 * @param args
 	 */
-	@SuppressWarnings({ "resource" })
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
@@ -74,16 +73,19 @@ public class RunMain {
 	private static void moveSuspiciousFiles(DeviceInfo paramObjDeviceInfo){
 		List<FileDetails> lstObjDeviceInfo=objFileDetailsService.getSuspiciousFileDetailsByDeviceInfoId(paramObjDeviceInfo.getCompId());
 		
-		File newDir = new File("\\\\192.168.0.215\\Temp\\SystemAudit\\"+paramObjDeviceInfo.getCompName());
+		DateTime dateForFolder=new DateTime();
 		
-		if(!newDir.exists()){
-			try{
-			newDir.mkdir();
-			}catch(Exception ex){
-				ex.printStackTrace();
-				return;
+		File newDir = new File("\\\\192.168.0.214\\SystemAudit\\"+paramObjDeviceInfo.getCompName()+"\\"+dateForFolder.getYear()+"-"+dateForFolder.getMonthOfYear()+"-"+dateForFolder.getDayOfMonth()+"_"+dateForFolder.getHourOfDay()+"-"+dateForFolder.getMinuteOfHour());
+		
+		if(lstObjDeviceInfo!=null && lstObjDeviceInfo.size()>0)
+			if(!newDir.exists()){
+				try{
+					newDir.mkdir();
+				}catch(Exception ex){
+					ex.printStackTrace();
+					return;
+				}
 			}
-		}
 		for(FileDetails objFileDetails : lstObjDeviceInfo){
 			try{
 			FileUtils.copyFile(new File(objFileDetails.getFileFullPath()), new File(newDir.getPath()+"\\"+objFileDetails.getFileName()));
@@ -112,10 +114,15 @@ public class RunMain {
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
+		createNewCurrentSchedule(paramStrComputerName, "FirstTime");
+	}
+	
+	private static void createNewCurrentSchedule(String paramStrComputerName, String paramStrCreatedBy){
+		
+		DeviceInfo objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(paramStrComputerName);
 		ScheduleMaster objScheduleMaster=new ScheduleMaster();
-		objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(paramStrComputerName);
 		objScheduleMaster.setObjDeviceInfo(objDeviceInfo);
-		objScheduleMaster.setSchCreatedBy("FirstTime");
+		objScheduleMaster.setSchCreatedBy(paramStrCreatedBy);
 		objScheduleMaster.setSchCreatedDate(new Date());
 		objScheduleMaster.setSchRunDateTime(new Date());
 		objScheduleMaster.setSchStatus("P");
@@ -125,14 +132,14 @@ public class RunMain {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	private static void runScheduleIfRequired(DeviceInfo paramObjObjDeviceInfo){
 		ScheduleMaster objScheduleMaster=objScheduleMasterService.getScheduleMasterByDeviceComputerId(paramObjObjDeviceInfo.getCompId());
 		System.out.println("Else objScheduleMaster : "+objScheduleMaster);
 		if(objScheduleMaster!=null){
-			if(objScheduleMaster.getSchRunDateTime().before(new Date()) && (objScheduleMaster.getSchStatus().compareToIgnoreCase("P")==0||objScheduleMaster.getSchStatus().compareToIgnoreCase("F")==0)){
-				objFileDetailsService.removeFileDetailsByDeviceInfoId(paramObjObjDeviceInfo.getCompId());
-				paramObjObjDeviceInfo=getDriveDetails(paramObjObjDeviceInfo);
+			if(objScheduleMaster.getSchRunDateTime().before(new Date()) && (objScheduleMaster.getSchStatus().compareToIgnoreCase("P")==0)){
+				//objFileDetailsService.removeFileDetailsByDeviceInfoId(paramObjObjDeviceInfo.getCompId());
+				paramObjObjDeviceInfo=getDriveDetails(paramObjObjDeviceInfo,objScheduleMaster);
 				System.out.println("before list objScheduleMaster : "+objScheduleMaster);
 				try{
 					objDeviceInfoService.updateDeviceInfo(paramObjObjDeviceInfo);
@@ -141,12 +148,17 @@ public class RunMain {
 					objScheduleMaster.setSchStatus("F");
 					ex.printStackTrace();
 				}
-				objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
+				if(objScheduleMaster.getSchStatus().equalsIgnoreCase("S"))
+					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
+				else{
+					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
+					createNewCurrentSchedule(paramObjObjDeviceInfo.getCompName(), "AutoOnFail");
+				}
 			}
 		}
 	}
 	
-	private static DeviceInfo getDriveDetails(DeviceInfo paramObjDeviceInfo){
+	private static DeviceInfo getDriveDetails(DeviceInfo paramObjDeviceInfo,ScheduleMaster paramObjScheduleMaster){
 			FileSystemView fsv = FileSystemView.getFileSystemView();
 			File drive_list[] = File.listRoots();
 			DriveInfo objDriveInfo;
@@ -162,14 +174,14 @@ public class RunMain {
 				objDriveInfo.setDrvType(fsv.getSystemTypeDescription(drive));
 				lstObjDriveInfo.add(objDriveInfo);
 				if (fsv.getSystemTypeDescription(drive).equalsIgnoreCase("Local Disk"))
-					list(drive, drive.getAbsolutePath(),paramObjDeviceInfo);
+					list(drive, drive.getAbsolutePath(), paramObjDeviceInfo, paramObjScheduleMaster);
 			}
 			paramObjDeviceInfo.setLstObjDriveInfo(lstObjDriveInfo);
 			paramObjDeviceInfo.setLstObjFileDetails(lstObjFileDetails);
 			return paramObjDeviceInfo;
 		}
 	
-	private static void list(File f, String root, DeviceInfo paramObjDeviceInfo) {
+	private static void list(File f, String root, DeviceInfo paramObjDeviceInfo, ScheduleMaster paramObjScheduleMaster) {
 		if (f.isFile()) {
 			try {
 				//System.out.println("File Name : "+f.getAbsolutePath());
@@ -179,10 +191,10 @@ public class RunMain {
 				
 				if (!(f.getName().lastIndexOf('.') == -1))
 					if(f.getName().substring(f.getName().lastIndexOf('.')).length()>10)
-						objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.'),(f.getName().lastIndexOf('.')+10)));
+						objFileDetails.setFileExtension("NotAvail");//objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.'),(f.getName().lastIndexOf('.')+10)));
 					else
 						objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.')));
-				
+				objFileDetails.setObjScheduleMaster(paramObjScheduleMaster);
 				objFileDetails.setFileFullPath(f.getAbsolutePath());
 				objFileDetails.setFileName(f.getName());
 				objFileDetails.setFileSize(f.length());
@@ -197,7 +209,7 @@ public class RunMain {
 				try {
 					
 					if (!Files.readAttributes(t.toPath(), DosFileAttributes.class).isSystem())
-						list(t, root, paramObjDeviceInfo); // calls list for each content of
+						list(t, root, paramObjDeviceInfo, paramObjScheduleMaster); // calls list for each content of
 										// directory
 				} catch (Exception e) {
 				}
