@@ -37,7 +37,7 @@ public class DeviceInfo {
 	@Column(unique = true, name = "COMP_NAME", nullable = false)
 	private String compName;
 
-	@Size(max = 50)
+	@Size(max = 150)
 	@Column(name = "COMP_USER_NAME", nullable = true)
 	private String compUserName;
 
@@ -47,7 +47,7 @@ public class DeviceInfo {
 	private String compOsName;
 
 	@Column(name = "COMP_PROCESSOR_TYPE", nullable = true)
-	@Size(max = 50)
+	@Size(max = 150)
 	private String compProcessorType;
 
 	@OneToMany(mappedBy = "objDeviceInfo")

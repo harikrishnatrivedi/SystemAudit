@@ -14,6 +14,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 /**
  * @author harikrishna.trivedi
  *
@@ -28,8 +30,9 @@ public class DeviceGroup {
 	@Column(name = "GRP_ID", nullable = false)
 	private int grpId;
 
-	@Column(name = "GRP_NAME", nullable = false)
-	@Size(max = 8)
+	@Column(unique=true, name = "GRP_NAME", nullable = false)
+	@NotBlank
+	@Size(max = 50)
 	private String grpName;
 
 	@Column(name = "GRP_DESCRIPTION", nullable = true)

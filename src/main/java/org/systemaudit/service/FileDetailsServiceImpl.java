@@ -43,8 +43,8 @@ public class FileDetailsServiceImpl implements FileDetailsService {
 		this.fileDetailsDAO.removeFileDetailsByDeviceInfoId(paramIntDeviceInfoId);
 	}
 	
-	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoId(int paramIntDeviceInfoId){
-		return this.fileDetailsDAO.getSuspiciousFileDetailsByDeviceInfoId(paramIntDeviceInfoId);
+	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoCompId,String paramStrFileStatus){
+		return this.fileDetailsDAO.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, paramStrFileStatus);
 	}
 	
 }

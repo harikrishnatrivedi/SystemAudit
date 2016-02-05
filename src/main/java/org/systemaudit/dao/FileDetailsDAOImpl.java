@@ -32,10 +32,10 @@ public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> imp
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoId(int paramIntDeviceInfoId){
+	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoId, String paramStrFileStatus){
 		return getCurrentSession().createQuery("from FileDetails where objDeviceInfo.compId= :compId and fileStatus= :fileStatus")
 				.setParameter("compId", paramIntDeviceInfoId)
-				.setParameter("fileStatus", "Suspicious")
+				.setParameter("fileStatus", paramStrFileStatus)
 				.list();
 	}
 	
