@@ -3,6 +3,7 @@ package org.systemaudit.service;
 import java.util.List;
 
 import org.systemaudit.model.FileDetails;
+import org.systemaudit.model.FileFolderOperationStatus;
 
 public abstract interface FileDetailsService
 {
@@ -14,7 +15,7 @@ public abstract interface FileDetailsService
   
   public abstract List<FileDetails> listFileDetailsByDeviceInfoId(int paramIntDeviceInfoId);
   
-  public abstract List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoCompId,String paramStrFileStatus);
+  public abstract List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoCompId, FileFolderOperationStatus paramEnumFileFolderOperationStatus);
   
   public abstract FileDetails getFileDetailsById(int paramIntFileDetailsId);
   

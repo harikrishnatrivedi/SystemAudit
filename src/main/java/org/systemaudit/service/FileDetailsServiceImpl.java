@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.systemaudit.dao.FileDetailsDAO;
-import org.systemaudit.model.FileDetails;;
+import org.systemaudit.model.FileDetails;
+import org.systemaudit.model.FileFolderOperationStatus;;
 
 @Service("FileDetailsServiceImpl")
 @Transactional
@@ -43,8 +44,8 @@ public class FileDetailsServiceImpl implements FileDetailsService {
 		this.fileDetailsDAO.removeFileDetailsByDeviceInfoId(paramIntDeviceInfoId);
 	}
 	
-	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoCompId,String paramStrFileStatus){
-		return this.fileDetailsDAO.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, paramStrFileStatus);
+	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoCompId,FileFolderOperationStatus paramEnumFileFolderOperationStatus){
+		return this.fileDetailsDAO.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, paramEnumFileFolderOperationStatus);
 	}
 	
 }

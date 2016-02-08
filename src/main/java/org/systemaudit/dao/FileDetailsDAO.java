@@ -3,6 +3,7 @@ package org.systemaudit.dao;
 import java.util.List;
 
 import org.systemaudit.model.FileDetails;
+import org.systemaudit.model.FileFolderOperationStatus;
 
 
 public abstract interface FileDetailsDAO
@@ -16,7 +17,7 @@ public abstract interface FileDetailsDAO
   
   public abstract List<FileDetails> listFileDetailsByDeviceInfoId(int paramIntDeviceInfoId);
 
-  public abstract List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoId,String paramStrFileStatus);
+  public abstract List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoId,FileFolderOperationStatus paramEnumFileFolderOperationStatus);
 	
   public abstract FileDetails getFileDetailsById(int paramIntId);
   

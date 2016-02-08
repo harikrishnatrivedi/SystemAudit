@@ -5,6 +5,7 @@ import java.util.List;
 import org.hibernate.Query;
 import org.springframework.stereotype.Repository;
 import org.systemaudit.model.FileDetails;
+import org.systemaudit.model.FileFolderOperationStatus;
 
 @Repository("FileDetailsDAOImpl")
 public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> implements FileDetailsDAO {
@@ -32,10 +33,10 @@ public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> imp
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoId, String paramStrFileStatus){
+	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoId, FileFolderOperationStatus paramEnumFileFolderOperationStatus){
 		return getCurrentSession().createQuery("from FileDetails where objDeviceInfo.compId= :compId and fileStatus= :fileStatus")
 				.setParameter("compId", paramIntDeviceInfoId)
-				.setParameter("fileStatus", paramStrFileStatus)
+				.setParameter("fileStatus", paramEnumFileFolderOperationStatus)
 				.list();
 	}
 	

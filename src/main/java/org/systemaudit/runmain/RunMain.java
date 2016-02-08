@@ -25,6 +25,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.systemaudit.model.DeviceInfo;
 import org.systemaudit.model.DriveInfo;
 import org.systemaudit.model.FileDetails;
+import org.systemaudit.model.FileFolderOperationStatus;
 import org.systemaudit.model.ScheduleMaster;
 import org.systemaudit.service.DeviceInfoService;
 import org.systemaudit.service.FileDetailsService;
@@ -72,34 +73,59 @@ public class RunMain {
 			firstTimeEntry(compName);
 		} else {
 			runScheduleIfRequired(objDeviceInfo);
-			moveSuspiciousFiles(objDeviceInfo);
-			deleteSuspiciousFiles(objDeviceInfo.getCompId());
+			moveRequestedFiles(objDeviceInfo);
+			deleteRequestedFiles(objDeviceInfo.getCompId());
 		}
 	}
 
-	private static void deleteSuspiciousFiles(int paramIntDeviceInfoCompId) {
+	private static void deleteRequestedFiles(int paramIntDeviceInfoCompId) {
 		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
-				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, "DeleteReq");
+				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, FileFolderOperationStatus.DELETEREQUEST);
 		for (FileDetails objFileDetails : lstObjDeviceInfo) {
 			try {
 				Path objPath = FileSystems.getDefault().getPath(objFileDetails.getFileFullPath());
 				Files.delete(objPath);
-				objFileDetails.setFileStatus("Deleted");
+				objFileDetails.setFileStatus(FileFolderOperationStatus.DELETEED);
 			} catch (NoSuchFileException x) {
-				objFileDetails.setFileStatus("NotExists");
+				objFileDetails.setFileStatus(FileFolderOperationStatus.NOTEXIST);
 			} catch (DirectoryNotEmptyException x) {
-				objFileDetails.setFileStatus("NotExists");
+				objFileDetails.setFileStatus(FileFolderOperationStatus.NOTEXIST);
 			} catch (IOException x) {
-				objFileDetails.setFileStatus("NoRights");
+				objFileDetails.setFileStatus(FileFolderOperationStatus.NORIGHTS);
 				// File permission problems are caught here.
 			}
 			objFileDetailsService.updateFileDetails(objFileDetails);
 		}
 	}
 
-	private static void moveSuspiciousFiles(DeviceInfo paramObjDeviceInfo) {
+	private static void deleteSuspiciousFolder(int paramIntDeviceInfoCompId) {
 		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
-				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramObjDeviceInfo.getCompId(), "Suspicious");
+				.listDeleteRequestedFolderDetailsByDeviceId(paramIntDeviceInfoCompId);
+		
+	}
+	
+	public static void recursiveDelete(File file) {
+        //to end the recursive loop
+        if (!file.exists()){
+        	
+            return;
+        }
+         
+        //if directory, go inside and call recursively
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                //call recursively
+                recursiveDelete(f);
+            }
+        }
+        //call delete to delete files and empty directory
+        file.delete();
+        
+    }
+	
+	private static void moveRequestedFiles(DeviceInfo paramObjDeviceInfo) {
+		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
+				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramObjDeviceInfo.getCompId(), FileFolderOperationStatus.MOVEREQUEST);
 
 		DateTime dateForFolder = new DateTime();
 
@@ -120,7 +146,7 @@ public class RunMain {
 			try {
 				FileUtils.copyFile(new File(objFileDetails.getFileFullPath()),
 						new File(newDir.getPath() + "\\" + objFileDetails.getFileName()));
-				objFileDetails.setFileStatus("Transfered");
+				objFileDetails.setFileStatus(FileFolderOperationStatus.MOVED);
 				objFileDetailsService.updateFileDetails(objFileDetails);
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -157,7 +183,7 @@ public class RunMain {
 		objScheduleMaster.setObjDeviceInfo(objDeviceInfo);
 		objScheduleMaster.setSchCreatedBy(paramStrCreatedBy);
 		objScheduleMaster.setSchCreatedDate(new Date());
-		objScheduleMaster.setSchRunDateTime(new Date());
+		objScheduleMaster.setSchScheduledDateTime(new Date());
 		objScheduleMaster.setSchStatus("P");
 		try {
 			objScheduleMasterService.addScheduleMaster(objScheduleMaster);
@@ -171,7 +197,7 @@ public class RunMain {
 				.getScheduleMasterByDeviceComputerId(paramObjObjDeviceInfo.getCompId());
 		System.out.println("Else objScheduleMaster : " + objScheduleMaster);
 		if (objScheduleMaster != null) {
-			if (objScheduleMaster.getSchRunDateTime().before(new Date())
+			if (objScheduleMaster.getSchScheduledDateTime().before(new Date())
 					&& (objScheduleMaster.getSchStatus().compareToIgnoreCase("P") == 0)) {
 				// objFileDetailsService.removeFileDetailsByDeviceInfoId(paramObjObjDeviceInfo.getCompId());
 				paramObjObjDeviceInfo = getDriveDetails(paramObjObjDeviceInfo, objScheduleMaster);
@@ -183,6 +209,7 @@ public class RunMain {
 					objScheduleMaster.setSchStatus("F");
 					ex.printStackTrace();
 				}
+				objScheduleMaster.setSchActualRunDateTime(new Date());
 				if (objScheduleMaster.getSchStatus().equalsIgnoreCase("S"))
 					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
 				else {
