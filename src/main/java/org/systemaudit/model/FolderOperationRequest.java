@@ -28,8 +28,8 @@ import org.hibernate.validator.constraints.NotBlank;
  */
 
 @Entity
-@Table(name = "FOLDER_DELETE_REQUEST")
-public class FolderDeleteRequest {
+@Table(name = "FOLDER_OPERATION_REQUEST")
+public class FolderOperationRequest {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,7 +54,6 @@ public class FolderDeleteRequest {
 	@Size(max = 15)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date foldOperationRequestedDatetime;
-
 	
 	@ManyToOne
 	@JoinColumn(name = "FOLD_COMP_ID", referencedColumnName = "COMP_ID")
@@ -67,17 +66,12 @@ public class FolderDeleteRequest {
 	
 	@Override
 	public String toString() {
-		return "objFileDetails [objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
-				+ ", objDeviceInfo=" + objDeviceInfo
+		return "FolderOperationRequest [foldId=" + foldId
+				+ ", foldFullPath=" + foldFullPath
+				+ ", foldStatus=" + foldStatus
+				+ ", foldOperationRequestedBy=" + foldOperationRequestedBy
+				+ ", foldOperationRequestedDatetime=" + foldOperationRequestedDatetime
+				+ ", objScheduleMaster=" + objScheduleMaster
 				+ "]";
 	}
 }

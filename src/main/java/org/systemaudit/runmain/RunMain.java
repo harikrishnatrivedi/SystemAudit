@@ -27,6 +27,7 @@ import org.systemaudit.model.DriveInfo;
 import org.systemaudit.model.FileDetails;
 import org.systemaudit.model.FileFolderOperationStatus;
 import org.systemaudit.model.ScheduleMaster;
+import org.systemaudit.model.ScheduleStatus;
 import org.systemaudit.service.DeviceInfoService;
 import org.systemaudit.service.FileDetailsService;
 import org.systemaudit.service.ScheduleMasterService;
@@ -184,7 +185,7 @@ public class RunMain {
 		objScheduleMaster.setSchCreatedBy(paramStrCreatedBy);
 		objScheduleMaster.setSchCreatedDate(new Date());
 		objScheduleMaster.setSchScheduledDateTime(new Date());
-		objScheduleMaster.setSchStatus("P");
+		objScheduleMaster.setSchStatus(ScheduleStatus.PENDING);
 		try {
 			objScheduleMasterService.addScheduleMaster(objScheduleMaster);
 		} catch (Exception ex) {
@@ -198,19 +199,19 @@ public class RunMain {
 		System.out.println("Else objScheduleMaster : " + objScheduleMaster);
 		if (objScheduleMaster != null) {
 			if (objScheduleMaster.getSchScheduledDateTime().before(new Date())
-					&& (objScheduleMaster.getSchStatus().compareToIgnoreCase("P") == 0)) {
+					&& objScheduleMaster.getSchStatus().toString().equalsIgnoreCase(ScheduleStatus.PENDING.name())) {
 				// objFileDetailsService.removeFileDetailsByDeviceInfoId(paramObjObjDeviceInfo.getCompId());
 				paramObjObjDeviceInfo = getDriveDetails(paramObjObjDeviceInfo, objScheduleMaster);
 				System.out.println("before list objScheduleMaster : " + objScheduleMaster);
 				try {
 					objDeviceInfoService.updateDeviceInfo(paramObjObjDeviceInfo);
-					objScheduleMaster.setSchStatus("S");
+					objScheduleMaster.setSchStatus(ScheduleStatus.SUCCESS);
 				} catch (Exception ex) {
-					objScheduleMaster.setSchStatus("F");
+					objScheduleMaster.setSchStatus(ScheduleStatus.FAILED);
 					ex.printStackTrace();
 				}
 				objScheduleMaster.setSchActualRunDateTime(new Date());
-				if (objScheduleMaster.getSchStatus().equalsIgnoreCase("S"))
+				if (objScheduleMaster.getSchStatus().toString().equalsIgnoreCase(ScheduleStatus.SUCCESS.name()))
 					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
 				else {
 					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
