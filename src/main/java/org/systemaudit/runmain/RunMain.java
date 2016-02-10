@@ -26,12 +26,15 @@ import org.systemaudit.model.DeviceInfo;
 import org.systemaudit.model.DriveInfo;
 import org.systemaudit.model.FileDetails;
 import org.systemaudit.model.FileFolderOperationStatus;
+import org.systemaudit.model.FolderOperationRequest;
+import org.systemaudit.model.KeyValue;
 import org.systemaudit.model.ScheduleMaster;
 import org.systemaudit.model.ScheduleStatus;
 import org.systemaudit.service.DeviceInfoService;
 import org.systemaudit.service.FileDetailsService;
+import org.systemaudit.service.FolderOperationRequestService;
+import org.systemaudit.service.KeyValueService;
 import org.systemaudit.service.ScheduleMasterService;
-import org.systemaudit.service.ScheduleOperationService;
 
 /**
  * @author Administrator
@@ -52,9 +55,12 @@ public class RunMain {
 	private static FileDetailsService objFileDetailsService = (FileDetailsService) ctx
 			.getBean("FileDetailsServiceImpl");
 
-	ScheduleOperationService objScheduleOperationService = (ScheduleOperationService) ctx
-			.getBean("ScheduleOperationServiceImpl");
+	private static FolderOperationRequestService objFolderOperationRequestService = (FolderOperationRequestService) ctx
+			.getBean("FolderOperationRequestServiceImpl");
 
+	private static KeyValueService objKeyValueService = (KeyValueService) ctx
+			.getBean("KeyValueServiceImpl");
+	
 	/**
 	 * @param args
 	 */
@@ -70,45 +76,76 @@ public class RunMain {
 		}
 		DeviceInfo objDeviceInfo;
 		objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(compName);
+		KeyValue objKeyValue = objKeyValueService.getKeyValueByKey("FOLDER");
 		if (objDeviceInfo == null) {
 			firstTimeEntry(compName);
 		} else {
 			runScheduleIfRequired(objDeviceInfo);
 			moveRequestedFiles(objDeviceInfo);
 			deleteRequestedFiles(objDeviceInfo.getCompId());
+			deleteRequestedFolder(objDeviceInfo.getCompId());
+			
 		}
 	}
 
 	private static void deleteRequestedFiles(int paramIntDeviceInfoCompId) {
 		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
 				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, FileFolderOperationStatus.DELETEREQUEST);
+		Path objPath=null;
 		for (FileDetails objFileDetails : lstObjDeviceInfo) {
-			try {
-				Path objPath = FileSystems.getDefault().getPath(objFileDetails.getFileFullPath());
-				Files.delete(objPath);
-				objFileDetails.setFileStatus(FileFolderOperationStatus.DELETEED);
-			} catch (NoSuchFileException x) {
-				objFileDetails.setFileStatus(FileFolderOperationStatus.NOTEXIST);
-			} catch (DirectoryNotEmptyException x) {
-				objFileDetails.setFileStatus(FileFolderOperationStatus.NOTEXIST);
-			} catch (IOException x) {
-				objFileDetails.setFileStatus(FileFolderOperationStatus.NORIGHTS);
-				// File permission problems are caught here.
-			}
+			objPath = FileSystems.getDefault().getPath(objFileDetails.getFileFullPath());
+			objFileDetails.setFileStatus(deleteFile(objPath));
 			objFileDetailsService.updateFileDetails(objFileDetails);
 		}
 	}
 
-	private static void deleteSuspiciousFolder(int paramIntDeviceInfoCompId) {
-		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
-				.listDeleteRequestedFolderDetailsByDeviceId(paramIntDeviceInfoCompId);
-		
+	private static FileFolderOperationStatus deleteFile(Path paramObjPathToDelete){
+		try {
+			Files.delete(paramObjPathToDelete);
+			return FileFolderOperationStatus.DELETEED;
+		} catch (NoSuchFileException x) {
+			return FileFolderOperationStatus.NOTEXIST;
+		} catch (DirectoryNotEmptyException x) {
+			return FileFolderOperationStatus.NOTEXIST;
+		} catch (IOException x) {
+			return FileFolderOperationStatus.NORIGHTS;
+		}
 	}
 	
-	public static void recursiveDelete(File file) {
+	private static void deleteRequestedFolder(int paramIntDeviceInfoCompId) {
+		List<FolderOperationRequest> lstObjFolderOperationRequest = objFolderOperationRequestService.listFolderOperationRequestByDeviceInfoId(paramIntDeviceInfoCompId, FileFolderOperationStatus.DELETEREQUEST);
+		FileDetails objFileDetailsToDeleteFilter=new FileDetails();
+		List<FileDetails> lstObjFileDetailsToDelete=null;
+		Path objPath=null;
+		for(FolderOperationRequest objFolderOperationRequest : lstObjFolderOperationRequest){
+			objFileDetailsToDeleteFilter.setFileFolderPath(objFolderOperationRequest.getFoldFullPath());
+			lstObjFileDetailsToDelete=objFileDetailsService.listFileDetailsByFileFilter(objFileDetailsToDeleteFilter);
+			for(FileDetails objFileDetailsToDelete : lstObjFileDetailsToDelete){
+				objPath = FileSystems.getDefault().getPath(objFileDetailsToDelete.getFileFullPath());
+				objFileDetailsToDelete.setFileStatus(deleteFile(objPath));
+				objFileDetailsService.updateFileDetails(objFileDetailsToDelete);
+			}
+			if(new File(objFolderOperationRequest.getFoldFullPath()).exists()){
+				recursiveFolderDelete(new File(objFolderOperationRequest.getFoldFullPath()));
+				if(new File(objFolderOperationRequest.getFoldFullPath()).exists()){
+					objFolderOperationRequest.setFoldStatus(FileFolderOperationStatus.FOLDERNOTEMPTY);
+				}else{
+					objFolderOperationRequest.setFoldStatus(FileFolderOperationStatus.DELETEED);
+				}
+			}else{
+				objFolderOperationRequest.setFoldStatus(FileFolderOperationStatus.NOTEXIST);
+			}
+			objFolderOperationRequestService.updateFileDetails(objFolderOperationRequest);
+		}
+	}
+	
+	/**
+	 * @param file
+	 * @return
+	 */
+	public static void recursiveFolderDelete(File file) {
         //to end the recursive loop
-        if (!file.exists()){
-        	
+        if (!file.exists() || file.isFile()){
             return;
         }
          
@@ -116,12 +153,15 @@ public class RunMain {
         if (file.isDirectory()) {
             for (File f : file.listFiles()) {
                 //call recursively
-                recursiveDelete(f);
+                recursiveFolderDelete(f);
             }
         }
         //call delete to delete files and empty directory
-        file.delete();
-        
+//        if(file.isDirectory()){
+        	file.delete();
+/*        	return true;
+        }else
+        	return false;*/
     }
 	
 	private static void moveRequestedFiles(DeviceInfo paramObjDeviceInfo) {
@@ -262,6 +302,7 @@ public class RunMain {
 					objFileDetails.setFileExtension("NotAvail");// objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.'),(f.getName().lastIndexOf('.')+10)));
 				objFileDetails.setObjScheduleMaster(paramObjScheduleMaster);
 				objFileDetails.setFileFullPath(f.getAbsolutePath());
+				objFileDetails.setFileFolderPath(f.getParent());
 				objFileDetails.setFileName(f.getName());
 				objFileDetails.setFileSize(f.length());
 				lstObjFileDetails.add(objFileDetails);

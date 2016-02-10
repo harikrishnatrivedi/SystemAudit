@@ -45,16 +45,16 @@ public class FolderOperationRequest {
 	@Column(name = "FOLD_STATUS", nullable = false, columnDefinition = "character varying(15) default 'GOOD'")
 	@Enumerated(EnumType.STRING)
 	private FileFolderOperationStatus foldStatus = FileFolderOperationStatus.GOOD;
-	
+
 	@Column(name = "FOLD_OPERATION_REQUESTED_BY", nullable = false)
 	@Size(max = 15)
 	private String foldOperationRequestedBy;
-	
+
 	@Column(name = "FOLD_OPERATION_REQUESTED_DATETIME", nullable = false)
 	@Size(max = 15)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date foldOperationRequestedDatetime;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "FOLD_COMP_ID", referencedColumnName = "COMP_ID")
 	private DeviceInfo objDeviceInfo;
@@ -63,17 +63,116 @@ public class FolderOperationRequest {
 	@JoinColumn(name = "FOLD_SCH_ID", referencedColumnName = "SCH_ID")
 	private ScheduleMaster objScheduleMaster;
 
-	
+	/**
+	 * @return the foldId
+	 */
+	public int getFoldId() {
+		return foldId;
+	}
+
+	/**
+	 * @param foldId
+	 *            the foldId to set
+	 */
+	public void setFoldId(int foldId) {
+		this.foldId = foldId;
+	}
+
+	/**
+	 * @return the foldFullPath
+	 */
+	public String getFoldFullPath() {
+		return foldFullPath;
+	}
+
+	/**
+	 * @param foldFullPath
+	 *            the foldFullPath to set
+	 */
+	public void setFoldFullPath(String foldFullPath) {
+		this.foldFullPath = foldFullPath;
+	}
+
+	/**
+	 * @return the foldStatus
+	 */
+	public FileFolderOperationStatus getFoldStatus() {
+		return foldStatus;
+	}
+
+	/**
+	 * @param foldStatus
+	 *            the foldStatus to set
+	 */
+	public void setFoldStatus(FileFolderOperationStatus foldStatus) {
+		this.foldStatus = foldStatus;
+	}
+
+	/**
+	 * @return the foldOperationRequestedBy
+	 */
+	public String getFoldOperationRequestedBy() {
+		return foldOperationRequestedBy;
+	}
+
+	/**
+	 * @param foldOperationRequestedBy
+	 *            the foldOperationRequestedBy to set
+	 */
+	public void setFoldOperationRequestedBy(String foldOperationRequestedBy) {
+		this.foldOperationRequestedBy = foldOperationRequestedBy;
+	}
+
+	/**
+	 * @return the foldOperationRequestedDatetime
+	 */
+	public Date getFoldOperationRequestedDatetime() {
+		return foldOperationRequestedDatetime;
+	}
+
+	/**
+	 * @param foldOperationRequestedDatetime
+	 *            the foldOperationRequestedDatetime to set
+	 */
+	public void setFoldOperationRequestedDatetime(Date foldOperationRequestedDatetime) {
+		this.foldOperationRequestedDatetime = foldOperationRequestedDatetime;
+	}
+
+	/**
+	 * @return the objDeviceInfo
+	 */
+	public DeviceInfo getObjDeviceInfo() {
+		return objDeviceInfo;
+	}
+
+	/**
+	 * @param objDeviceInfo
+	 *            the objDeviceInfo to set
+	 */
+	public void setObjDeviceInfo(DeviceInfo objDeviceInfo) {
+		this.objDeviceInfo = objDeviceInfo;
+	}
+
+	/**
+	 * @return the objScheduleMaster
+	 */
+	public ScheduleMaster getObjScheduleMaster() {
+		return objScheduleMaster;
+	}
+
+	/**
+	 * @param objScheduleMaster
+	 *            the objScheduleMaster to set
+	 */
+	public void setObjScheduleMaster(ScheduleMaster objScheduleMaster) {
+		this.objScheduleMaster = objScheduleMaster;
+	}
+
 	@Override
 	public String toString() {
-		return "FolderOperationRequest [foldId=" + foldId
-				+ ", foldFullPath=" + foldFullPath
-				+ ", foldStatus=" + foldStatus
-				+ ", foldOperationRequestedBy=" + foldOperationRequestedBy
-				+ ", foldOperationRequestedDatetime=" + foldOperationRequestedDatetime
-				+ ", objScheduleMaster=" + objScheduleMaster
-				+ "]";
+		return "FolderOperationRequest [foldId=" + foldId + ", foldFullPath=" + foldFullPath + ", foldStatus="
+				+ foldStatus + ", foldOperationRequestedBy=" + foldOperationRequestedBy
+				+ ", foldOperationRequestedDatetime=" + foldOperationRequestedDatetime + ", objScheduleMaster="
+				+ objScheduleMaster + "]";
 	}
 }
-
-

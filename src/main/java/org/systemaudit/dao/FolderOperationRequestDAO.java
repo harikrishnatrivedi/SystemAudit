@@ -11,14 +11,10 @@ public abstract interface FolderOperationRequestDAO
 {
   public abstract void updateFolderOperationRequest(FolderOperationRequest paramObjFolderOperationRequest);
   
-  public abstract List<FolderOperationRequest> listFolderOperationRequest(FileFolderOperationStatus paramEnumFileFolderOperationStatus);
+  public abstract List<FolderOperationRequest> listFolderOperationRequests(FileFolderOperationStatus paramEnumFileFolderOperationStatus);
   
   public abstract List<FolderOperationRequest> listFolderOperationRequestByDeviceInfoId(int paramIntDeviceInfoId, FileFolderOperationStatus paramEnumFileFolderOperationStatus);
 
-  public abstract FolderOperationRequest getFolderOperationById(int paramIntId);
-  
-  public abstract void removeFolderOperationRequest(int paramIntId);
-  
-  public abstract void removeFolderOperationRequestByDeviceInfoId(int paramIntDeviceInfoId);
-  
+  public abstract FolderOperationRequest getFolderOperationRequestById(int paramIntId);
+    
 }

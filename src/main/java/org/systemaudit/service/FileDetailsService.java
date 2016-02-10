@@ -17,6 +17,8 @@ public abstract interface FileDetailsService
   
   public abstract List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoCompId, FileFolderOperationStatus paramEnumFileFolderOperationStatus);
   
+  public abstract List<FileDetails> listFileDetailsByFileFilter(FileDetails objFileDetails);
+  
   public abstract FileDetails getFileDetailsById(int paramIntFileDetailsId);
   
   public abstract void removeFileDetails(int paramIntFileDetailsId);
