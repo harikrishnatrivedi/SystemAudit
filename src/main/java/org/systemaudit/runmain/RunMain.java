@@ -3,8 +3,11 @@
  */
 package org.systemaudit.runmain;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileSystems;
@@ -14,7 +17,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.DosFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.filechooser.FileSystemView;
 
@@ -25,11 +30,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.systemaudit.model.DeviceInfo;
 import org.systemaudit.model.DriveInfo;
 import org.systemaudit.model.FileDetails;
-import org.systemaudit.model.FileFolderOperationStatus;
+import org.systemaudit.model.EnumFileFolderOperationStatus;
+import org.systemaudit.model.EnumKeyValue;
 import org.systemaudit.model.FolderOperationRequest;
 import org.systemaudit.model.KeyValue;
 import org.systemaudit.model.ScheduleMaster;
-import org.systemaudit.model.ScheduleStatus;
+import org.systemaudit.model.EnumScheduleStatus;
 import org.systemaudit.service.DeviceInfoService;
 import org.systemaudit.service.FileDetailsService;
 import org.systemaudit.service.FolderOperationRequestService;
@@ -76,21 +82,27 @@ public class RunMain {
 		}
 		DeviceInfo objDeviceInfo;
 		objDeviceInfo = objDeviceInfoService.getDeviceInfoByDeviceComputerName(compName);
-		KeyValue objKeyValue = objKeyValueService.getKeyValueByKey("FOLDER");
+		
 		if (objDeviceInfo == null) {
 			firstTimeEntry(compName);
 		} else {
 			runScheduleIfRequired(objDeviceInfo);
+			updateSuspiciousFileDetails(objDeviceInfo.getCompId());
 			moveRequestedFiles(objDeviceInfo);
 			deleteRequestedFiles(objDeviceInfo.getCompId());
 			deleteRequestedFolder(objDeviceInfo.getCompId());
-			
 		}
 	}
 
+	private static void updateSuspiciousFileDetails(int paramIntCompId) {
+		List<KeyValue> lstObjKeyValue = objKeyValueService.listKeyValue();
+		
+		
+	}
+	
 	private static void deleteRequestedFiles(int paramIntDeviceInfoCompId) {
 		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
-				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, FileFolderOperationStatus.DELETEREQUEST);
+				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntDeviceInfoCompId, EnumFileFolderOperationStatus.DELETEREQUEST);
 		Path objPath=null;
 		for (FileDetails objFileDetails : lstObjDeviceInfo) {
 			objPath = FileSystems.getDefault().getPath(objFileDetails.getFileFullPath());
@@ -99,21 +111,21 @@ public class RunMain {
 		}
 	}
 
-	private static FileFolderOperationStatus deleteFile(Path paramObjPathToDelete){
+	private static EnumFileFolderOperationStatus deleteFile(Path paramObjPathToDelete){
 		try {
 			Files.delete(paramObjPathToDelete);
-			return FileFolderOperationStatus.DELETEED;
+			return EnumFileFolderOperationStatus.DELETEED;
 		} catch (NoSuchFileException x) {
-			return FileFolderOperationStatus.NOTEXIST;
+			return EnumFileFolderOperationStatus.NOTEXIST;
 		} catch (DirectoryNotEmptyException x) {
-			return FileFolderOperationStatus.NOTEXIST;
+			return EnumFileFolderOperationStatus.NOTEXIST;
 		} catch (IOException x) {
-			return FileFolderOperationStatus.NORIGHTS;
+			return EnumFileFolderOperationStatus.NORIGHTS;
 		}
 	}
 	
 	private static void deleteRequestedFolder(int paramIntDeviceInfoCompId) {
-		List<FolderOperationRequest> lstObjFolderOperationRequest = objFolderOperationRequestService.listFolderOperationRequestByDeviceInfoId(paramIntDeviceInfoCompId, FileFolderOperationStatus.DELETEREQUEST);
+		List<FolderOperationRequest> lstObjFolderOperationRequest = objFolderOperationRequestService.listFolderOperationRequestByDeviceInfoId(paramIntDeviceInfoCompId, EnumFileFolderOperationStatus.DELETEREQUEST);
 		FileDetails objFileDetailsToDeleteFilter=new FileDetails();
 		List<FileDetails> lstObjFileDetailsToDelete=null;
 		Path objPath=null;
@@ -128,12 +140,12 @@ public class RunMain {
 			if(new File(objFolderOperationRequest.getFoldFullPath()).exists()){
 				recursiveFolderDelete(new File(objFolderOperationRequest.getFoldFullPath()));
 				if(new File(objFolderOperationRequest.getFoldFullPath()).exists()){
-					objFolderOperationRequest.setFoldStatus(FileFolderOperationStatus.FOLDERNOTEMPTY);
+					objFolderOperationRequest.setFoldStatus(EnumFileFolderOperationStatus.FOLDERNOTEMPTY);
 				}else{
-					objFolderOperationRequest.setFoldStatus(FileFolderOperationStatus.DELETEED);
+					objFolderOperationRequest.setFoldStatus(EnumFileFolderOperationStatus.DELETEED);
 				}
 			}else{
-				objFolderOperationRequest.setFoldStatus(FileFolderOperationStatus.NOTEXIST);
+				objFolderOperationRequest.setFoldStatus(EnumFileFolderOperationStatus.NOTEXIST);
 			}
 			objFolderOperationRequestService.updateFileDetails(objFolderOperationRequest);
 		}
@@ -166,11 +178,12 @@ public class RunMain {
 	
 	private static void moveRequestedFiles(DeviceInfo paramObjDeviceInfo) {
 		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
-				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramObjDeviceInfo.getCompId(), FileFolderOperationStatus.MOVEREQUEST);
+				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramObjDeviceInfo.getCompId(), EnumFileFolderOperationStatus.MOVEREQUEST);
 
 		DateTime dateForFolder = new DateTime();
-
-		File newDir = new File("\\\\192.168.0.214\\SystemAudit\\" + paramObjDeviceInfo.getCompName() + "\\"
+//		KeyValue objKeyValueTest= objKeyValueService.getKeyValueByKey(EnumKeyValue.NETWORK_LOC_TO_MOVE.name());
+	//	System.out.println("objKeyValueTest : "+objKeyValueTest);
+		File newDir = new File(objKeyValueService.getKeyValueByKey(EnumKeyValue.NETWORK_LOC_TO_MOVE.name()).getKvalValue().replaceAll("\\\\", "\\\\\\\\") + paramObjDeviceInfo.getCompName() + "\\"
 				+ dateForFolder.getYear() + "-" + dateForFolder.getMonthOfYear() + "-" + dateForFolder.getDayOfMonth()
 				+ "_" + dateForFolder.getHourOfDay() + "-" + dateForFolder.getMinuteOfHour());
 
@@ -183,15 +196,39 @@ public class RunMain {
 					return;
 				}
 			}
+		
+		File objFileDestination=null;
+		PrintWriter out = null;
+		
 		for (FileDetails objFileDetails : lstObjDeviceInfo) {
 			try {
-				FileUtils.copyFile(new File(objFileDetails.getFileFullPath()),
-						new File(newDir.getPath() + "\\" + objFileDetails.getFileName()));
-				objFileDetails.setFileStatus(FileFolderOperationStatus.MOVED);
-				objFileDetailsService.updateFileDetails(objFileDetails);
+				int i=0;
+
+				do{
+					if(i==0)
+						objFileDestination=new File(newDir.getPath() + "\\" + objFileDetails.getFileName());
+					else
+						objFileDestination=new File(newDir.getPath() + "\\" + objFileDetails.getFileName()+"_"+i);
+					i++;
+				}while(objFileDestination.exists());
+				FileUtils.copyFile(new File(objFileDetails.getFileFullPath()), objFileDestination);
+				objFileDetails.setFileStatus(EnumFileFolderOperationStatus.MOVED);
+
+				try {
+					out = new PrintWriter(new BufferedWriter(new FileWriter(newDir.getPath()+"\\FileDetails.txt", true)));
+					out.println(objFileDestination.getName()+"="+objFileDestination.getPath());
+				}catch (IOException e) {
+				    System.err.println(e);
+				}finally{
+				    if(out != null){
+				        out.close();
+				    }
+				}
 			} catch (Exception ex) {
+				objFileDetails.setFileStatus(EnumFileFolderOperationStatus.MOVEFAILED);
 				ex.printStackTrace();
 			}
+			objFileDetailsService.updateFileDetails(objFileDetails);
 		}
 	}
 
@@ -225,7 +262,7 @@ public class RunMain {
 		objScheduleMaster.setSchCreatedBy(paramStrCreatedBy);
 		objScheduleMaster.setSchCreatedDate(new Date());
 		objScheduleMaster.setSchScheduledDateTime(new Date());
-		objScheduleMaster.setSchStatus(ScheduleStatus.PENDING);
+		objScheduleMaster.setSchStatus(EnumScheduleStatus.PENDING);
 		try {
 			objScheduleMasterService.addScheduleMaster(objScheduleMaster);
 		} catch (Exception ex) {
@@ -236,22 +273,28 @@ public class RunMain {
 	private static void runScheduleIfRequired(DeviceInfo paramObjObjDeviceInfo) {
 		ScheduleMaster objScheduleMaster = objScheduleMasterService
 				.getScheduleMasterByDeviceComputerId(paramObjObjDeviceInfo.getCompId());
-		System.out.println("Else objScheduleMaster : " + objScheduleMaster);
+		List<KeyValue> lstObjKeyValue = objKeyValueService.listKeyValue();
+		Map<String, String> mapObjKeyValue=new HashMap<String, String>();
+		
+		for (KeyValue objKeyValue : lstObjKeyValue)
+			mapObjKeyValue.put(objKeyValue.getKvalId(), objKeyValue.getKvalValue());
+		
+		System.out.println("mapObjKeyValue : " + mapObjKeyValue);
 		if (objScheduleMaster != null) {
 			if (objScheduleMaster.getSchScheduledDateTime().before(new Date())
-					&& objScheduleMaster.getSchStatus().toString().equalsIgnoreCase(ScheduleStatus.PENDING.name())) {
+					&& objScheduleMaster.getSchStatus().toString().equalsIgnoreCase(EnumScheduleStatus.PENDING.name())) {
 				// objFileDetailsService.removeFileDetailsByDeviceInfoId(paramObjObjDeviceInfo.getCompId());
-				paramObjObjDeviceInfo = getDriveDetails(paramObjObjDeviceInfo, objScheduleMaster);
+				paramObjObjDeviceInfo = getDriveDetails(paramObjObjDeviceInfo, objScheduleMaster, mapObjKeyValue);
 				System.out.println("before list objScheduleMaster : " + objScheduleMaster);
 				try {
 					objDeviceInfoService.updateDeviceInfo(paramObjObjDeviceInfo);
-					objScheduleMaster.setSchStatus(ScheduleStatus.SUCCESS);
+					objScheduleMaster.setSchStatus(EnumScheduleStatus.SUCCESS);
 				} catch (Exception ex) {
-					objScheduleMaster.setSchStatus(ScheduleStatus.FAILED);
+					objScheduleMaster.setSchStatus(EnumScheduleStatus.FAILED);
 					ex.printStackTrace();
 				}
 				objScheduleMaster.setSchActualRunDateTime(new Date());
-				if (objScheduleMaster.getSchStatus().toString().equalsIgnoreCase(ScheduleStatus.SUCCESS.name()))
+				if (objScheduleMaster.getSchStatus().toString().equalsIgnoreCase(EnumScheduleStatus.SUCCESS.name()))
 					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
 				else {
 					objScheduleMasterService.updateScheduleMaster(objScheduleMaster);
@@ -261,12 +304,26 @@ public class RunMain {
 		}
 	}
 
-	private static DeviceInfo getDriveDetails(DeviceInfo paramObjDeviceInfo, ScheduleMaster paramObjScheduleMaster) {
+	private static DeviceInfo getDriveDetails(DeviceInfo paramObjDeviceInfo, ScheduleMaster paramObjScheduleMaster, Map<String, String> paramMapKeyValue) {
 		FileSystemView fsv = FileSystemView.getFileSystemView();
 		File drive_list[] = File.listRoots();
 		DriveInfo objDriveInfo;
 		paramObjDeviceInfo.setLstObjFileDetails(new ArrayList<FileDetails>());
 		List<DriveInfo> lstObjDriveInfo = new ArrayList<DriveInfo>();
+		String suspiciousFolderKeys[]={};
+		String suspiciousExtension[]={};
+		String suspiciousFilterStrDrive="";
+		
+		if(paramMapKeyValue!=null && paramMapKeyValue.get(EnumKeyValue.FOLDER.name())!=null){
+			suspiciousFolderKeys=paramMapKeyValue.get(EnumKeyValue.FOLDER.name()).split(",");
+		}
+		if(paramMapKeyValue!=null && paramMapKeyValue.get(EnumKeyValue.EXTENSION.name())!=null){
+			suspiciousExtension=paramMapKeyValue.get(EnumKeyValue.EXTENSION.name()).split(",");
+		}
+		if(paramMapKeyValue!=null && paramMapKeyValue.get(EnumKeyValue.FILT_FOLD_EXET_DRIVE.name())!=null){
+			suspiciousFilterStrDrive=paramMapKeyValue.get(EnumKeyValue.FILT_FOLD_EXET_DRIVE.name());
+		}
+		
 		for (File drive : drive_list) {
 			objDriveInfo = new DriveInfo();
 			objDriveInfo.setObjDeviceInfo(paramObjDeviceInfo);
@@ -277,7 +334,7 @@ public class RunMain {
 			objDriveInfo.setDrvType(fsv.getSystemTypeDescription(drive));
 			lstObjDriveInfo.add(objDriveInfo);
 			if (fsv.getSystemTypeDescription(drive).equalsIgnoreCase("Local Disk"))
-				list(drive, drive.getAbsolutePath(), paramObjDeviceInfo, paramObjScheduleMaster);
+				list(drive, drive.getAbsolutePath(), paramObjDeviceInfo, paramObjScheduleMaster, suspiciousFolderKeys, suspiciousExtension, suspiciousFilterStrDrive);
 		}
 		paramObjDeviceInfo.setLstObjDriveInfo(lstObjDriveInfo);
 		paramObjDeviceInfo.setLstObjFileDetails(lstObjFileDetails);
@@ -285,28 +342,51 @@ public class RunMain {
 	}
 
 	private static void list(File f, String root, DeviceInfo paramObjDeviceInfo,
-			ScheduleMaster paramObjScheduleMaster) {
+			ScheduleMaster paramObjScheduleMaster, String[] suspiciousFolderKeys, String[] suspiciousExtension, String paramStrDrive) {
 		if (f.isFile()) {
 			try {
+				
 				// System.out.println("File Name : "+f.getAbsolutePath());
 				objFileDetails = new FileDetails();
 				objFileDetails.setObjDeviceInfo(paramObjDeviceInfo);
 				objFileDetails.setFileDrive(root);
-
+				
+				
 				if (!(f.getName().lastIndexOf('.') == -1))
-					if (f.getName().substring(f.getName().lastIndexOf('.')).length() < 10)
+					if (f.getName().substring(f.getName().lastIndexOf('.')).length() < 10){
 						objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.')));
+						for(String extension : suspiciousExtension)
+							if(objFileDetails.getFileExtension().toUpperCase().indexOf(extension.toUpperCase())>-1 && root.toUpperCase().indexOf(paramStrDrive)>-1)
+								objFileDetails.setFileStatus(EnumFileFolderOperationStatus.SUSPICIOUS);
+					}
 					else
-						objFileDetails.setFileExtension("NotAvail");
+						objFileDetails.setFileExtension(EnumFileFolderOperationStatus.NOTEXIST.name());
 				else
-					objFileDetails.setFileExtension("NotAvail");// objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.'),(f.getName().lastIndexOf('.')+10)));
+					objFileDetails.setFileExtension(EnumFileFolderOperationStatus.NOTEXIST.name());// objFileDetails.setFileExtension(f.getName().substring(f.getName().lastIndexOf('.'),(f.getName().lastIndexOf('.')+10)));
+				
+				
+				
+				
 				objFileDetails.setObjScheduleMaster(paramObjScheduleMaster);
 				objFileDetails.setFileFullPath(f.getAbsolutePath());
 				objFileDetails.setFileFolderPath(f.getParent());
+				for(String folderKey : suspiciousFolderKeys){
+					if(objFileDetails.getFileFolderPath().toUpperCase().indexOf(folderKey.toUpperCase())>-1 && root.toUpperCase().indexOf(paramStrDrive)>-1)
+						objFileDetails.setFileStatus(EnumFileFolderOperationStatus.SUSPICIOUS);
+				}
+				
+				/*System.out.println("objFileDetails.getFileExtension().toUpperCase()"+objFileDetails.getFileExtension().toUpperCase());
+				System.out.println("suspiciousExtension"+suspiciousExtension.toString());
+				System.out.println("paramStrDrive"+paramStrDrive.toString());
+				System.out.println("objFileDetails.getFileFolderPath().toUpperCase()"+objFileDetails.getFileFolderPath().toUpperCase());
+				System.out.println("suspiciousFolderKeys"+suspiciousFolderKeys);*/
+				
+				
 				objFileDetails.setFileName(f.getName());
 				objFileDetails.setFileSize(f.length());
 				lstObjFileDetails.add(objFileDetails);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			return;
 		} else {
@@ -316,7 +396,7 @@ public class RunMain {
 				try {
 
 					if (!Files.readAttributes(t.toPath(), DosFileAttributes.class).isSystem())
-						list(t, root, paramObjDeviceInfo, paramObjScheduleMaster); // calls
+						list(t, root, paramObjDeviceInfo, paramObjScheduleMaster, suspiciousFolderKeys, suspiciousExtension, paramStrDrive); // calls
 																					// list
 																					// for
 																					// each

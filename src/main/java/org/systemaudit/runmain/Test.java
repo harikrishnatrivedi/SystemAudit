@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.joda.time.DateTime;
-import org.systemaudit.model.FileFolderOperationStatus;
+import org.systemaudit.model.EnumFileFolderOperationStatus;
 
 public class Test {
 
@@ -43,7 +43,7 @@ public class Test {
 					System.out.println("view.isRegularFile() : "+ view.isRegularFile());
 					System.out.println("view.isSymbolicLink() : "+ view.isSymbolicLink());
 				
-					FileFolderOperationStatus enumFileFolderOperationStatus=FileFolderOperationStatus.MOVED;
+					EnumFileFolderOperationStatus enumFileFolderOperationStatus=EnumFileFolderOperationStatus.MOVED;
 					System.out.println("Enum"+enumFileFolderOperationStatus.toString());
 					System.out.println("Enum"+enumFileFolderOperationStatus.name());
 					System.out.println("Enum"+enumFileFolderOperationStatus);

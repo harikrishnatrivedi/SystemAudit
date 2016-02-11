@@ -10,7 +10,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.systemaudit.model.FileDetails;
-import org.systemaudit.model.FileFolderOperationStatus;
+import org.systemaudit.model.EnumFileFolderOperationStatus;
 
 @Repository("FileDetailsDAOImpl")
 public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> implements FileDetailsDAO {
@@ -65,7 +65,7 @@ public class FileDetailsDAOImpl extends GenericDAOImpl<FileDetails, Integer> imp
 
 	@SuppressWarnings("unchecked")
 	public List<FileDetails> getSuspiciousFileDetailsByDeviceInfoIdAndStatus(int paramIntDeviceInfoId,
-			FileFolderOperationStatus paramEnumFileFolderOperationStatus) {
+			EnumFileFolderOperationStatus paramEnumFileFolderOperationStatus) {
 		return getCurrentSession()
 				.createQuery("from FileDetails where objDeviceInfo.compId= :compId and fileStatus= :fileStatus")
 				.setParameter("compId", paramIntDeviceInfoId)

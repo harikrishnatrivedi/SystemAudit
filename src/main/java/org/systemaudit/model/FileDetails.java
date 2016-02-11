@@ -58,10 +58,9 @@ public class FileDetails {
 	@Column(name = "FILE_SIZE", nullable = true)
 	private long fileSize;
 
-	@Size(max = 15)
 	@Column(name = "FILE_STATUS", nullable = false, columnDefinition = "character varying(15) default 'GOOD'")
 	@Enumerated(EnumType.STRING)
-	private FileFolderOperationStatus fileStatus = FileFolderOperationStatus.GOOD;
+	private EnumFileFolderOperationStatus fileStatus = EnumFileFolderOperationStatus.GOOD;
 
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "FILE_COMP_ID", referencedColumnName = "COMP_ID")
@@ -90,14 +89,14 @@ public class FileDetails {
 	/**
 	 * @return the fileStatus
 	 */
-	public FileFolderOperationStatus getFileStatus() {
+	public EnumFileFolderOperationStatus getFileStatus() {
 		return fileStatus;
 	}
 
 	/**
 	 * @param fileStatus the fileStatus to set
 	 */
-	public void setFileStatus(FileFolderOperationStatus fileStatus) {
+	public void setFileStatus(EnumFileFolderOperationStatus fileStatus) {
 		this.fileStatus = fileStatus;
 	}
 

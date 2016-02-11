@@ -18,5 +18,9 @@ public class KeyValueServiceImpl implements KeyValueService {
 
 	public KeyValue getKeyValueByKey(String paramStrKey) {
 		return this.objKeyValueDAO.getKeyValueByKey(paramStrKey);
-	}	
+	}
+	
+	public List<KeyValue> listKeyValue(){
+		return this.objKeyValueDAO.listKeyValue();
+	}
 }

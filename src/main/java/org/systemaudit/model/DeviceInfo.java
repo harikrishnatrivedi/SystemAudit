@@ -63,6 +63,9 @@ public class DeviceInfo {
 
 	@OneToMany(mappedBy = "objDeviceInfo",cascade = CascadeType.ALL)
 	private List<DriveInfo> lstObjDriveInfo;
+	
+	@OneToMany(mappedBy = "objDeviceInfo")
+	private List<FolderOperationRequest> lstObjFolderOperationRequest;
 
 	/**
 	 * @return the lstObjDriveInfo

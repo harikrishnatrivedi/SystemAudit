@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.systemaudit.dao.FolderOperationRequestDAO;
 import org.systemaudit.model.FolderOperationRequest;
-import org.systemaudit.model.FileFolderOperationStatus;;
+import org.systemaudit.model.EnumFileFolderOperationStatus;;
 
 @Service("FolderOperationRequestServiceImpl")
 @Transactional
@@ -20,11 +20,11 @@ public class FolderOperationRequestServiceImpl implements FolderOperationRequest
 		this.objFolderOperationRequestDAO.updateFolderOperationRequest(paramObjFolderOperationRequest);
 	}
 
-	public List<FolderOperationRequest> listFolderOperationRequest(FileFolderOperationStatus paramEnumFileFolderOperationStatus) {
+	public List<FolderOperationRequest> listFolderOperationRequest(EnumFileFolderOperationStatus paramEnumFileFolderOperationStatus) {
 		return this.objFolderOperationRequestDAO.listFolderOperationRequests(paramEnumFileFolderOperationStatus);
 	}
 
-	public List<FolderOperationRequest> listFolderOperationRequestByDeviceInfoId(int paramIntDeviceInfoId, FileFolderOperationStatus paramEnumFileFolderOperationStatus){
+	public List<FolderOperationRequest> listFolderOperationRequestByDeviceInfoId(int paramIntDeviceInfoId, EnumFileFolderOperationStatus paramEnumFileFolderOperationStatus){
 		return this.objFolderOperationRequestDAO.listFolderOperationRequestByDeviceInfoId(paramIntDeviceInfoId, paramEnumFileFolderOperationStatus);
 	}
 	

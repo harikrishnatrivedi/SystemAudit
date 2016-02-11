@@ -41,10 +41,9 @@ public class FolderOperationRequest {
 	@Column(name = "FOLD_FULL_PATH", nullable = false)
 	private String foldFullPath;
 
-	@Size(max = 15)
 	@Column(name = "FOLD_STATUS", nullable = false, columnDefinition = "character varying(15) default 'GOOD'")
 	@Enumerated(EnumType.STRING)
-	private FileFolderOperationStatus foldStatus = FileFolderOperationStatus.GOOD;
+	private EnumFileFolderOperationStatus foldStatus = EnumFileFolderOperationStatus.GOOD;
 
 	@Column(name = "FOLD_OPERATION_REQUESTED_BY", nullable = false)
 	@Size(max = 15)
@@ -96,7 +95,7 @@ public class FolderOperationRequest {
 	/**
 	 * @return the foldStatus
 	 */
-	public FileFolderOperationStatus getFoldStatus() {
+	public EnumFileFolderOperationStatus getFoldStatus() {
 		return foldStatus;
 	}
 
@@ -104,7 +103,7 @@ public class FolderOperationRequest {
 	 * @param foldStatus
 	 *            the foldStatus to set
 	 */
-	public void setFoldStatus(FileFolderOperationStatus foldStatus) {
+	public void setFoldStatus(EnumFileFolderOperationStatus foldStatus) {
 		this.foldStatus = foldStatus;
 	}
 

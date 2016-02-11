@@ -51,10 +51,10 @@ public class ScheduleMaster {
 	@Size(max = 15)
 	private String schCreatedBy;
 
-	@Size(max = 15)
+	
 	@Column(name = "SCH_STATUS", nullable = false, columnDefinition = "character varying(15) default 'PENDING'")
 	@Enumerated(EnumType.STRING)
-	private ScheduleStatus schStatus = ScheduleStatus.PENDING;
+	private EnumScheduleStatus schStatus = EnumScheduleStatus.PENDING;
 
 	@ManyToOne
 	@JoinColumn(name = "SCH_COMP_ID", referencedColumnName = "COMP_ID")
@@ -67,6 +67,10 @@ public class ScheduleMaster {
 	@OneToMany(mappedBy = "objScheduleMaster")
 	private List<FileDetails> lstObjFileDetails;
 
+	@OneToMany(mappedBy = "objScheduleMaster")
+	private List<FolderOperationRequest> lstObjFolderOperationRequest;
+
+	
 	/**
 	 * @return the schId
 	 */
@@ -145,7 +149,7 @@ public class ScheduleMaster {
 	/**
 	 * @return the schScheduleStatus
 	 */
-	public ScheduleStatus getSchStatus() {
+	public EnumScheduleStatus getSchStatus() {
 		return schStatus;
 	}
 
@@ -153,7 +157,7 @@ public class ScheduleMaster {
 	 * @param schScheduleStatus
 	 *            the schScheduleStatus to set
 	 */
-	public void setSchStatus(ScheduleStatus schStatus) {
+	public void setSchStatus(EnumScheduleStatus schStatus) {
 		this.schStatus = schStatus;
 	}
 

@@ -10,7 +10,7 @@ import org.hibernate.transform.Transformers;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.systemaudit.model.ScheduleMaster;
-import org.systemaudit.model.ScheduleStatus;
+import org.systemaudit.model.EnumScheduleStatus;
 
 @Repository("ScheduleMasterDAOImpl")
 public class ScheduleMasterDAOImpl extends GenericDAOImpl<ScheduleMaster, Integer> implements ScheduleMasterDAO {
@@ -31,7 +31,7 @@ public class ScheduleMasterDAOImpl extends GenericDAOImpl<ScheduleMaster, Intege
 		
 		Criteria criteria=getCurrentSession().createCriteria(ScheduleMaster.class).setFetchMode("objDeviceInfo", FetchMode.JOIN);
 		criteria.add(Restrictions.eq("objDeviceInfo.id", paramIntComputerId));
-		criteria.add(Restrictions.eq("schStatus", ScheduleStatus.PENDING));
+		criteria.add(Restrictions.eq("schStatus", EnumScheduleStatus.PENDING));
 		return (ScheduleMaster)criteria.uniqueResult();
 		/*criteria.setProjection(
 				Projections.projectionList()

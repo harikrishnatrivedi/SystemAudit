@@ -6,7 +6,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
-import org.systemaudit.model.FileFolderOperationStatus;
+import org.systemaudit.model.EnumFileFolderOperationStatus;
 import org.systemaudit.model.FolderOperationRequest;
 
 @Repository("FolderOperationRequestDAOImpl")
@@ -18,17 +18,18 @@ public class FolderOperationRequestDAOImpl extends GenericDAOImpl<FolderOperatio
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<FolderOperationRequest> listFolderOperationRequests(FileFolderOperationStatus paramEnumFileFolderOperationStatus) {
+	public List<FolderOperationRequest> listFolderOperationRequests(EnumFileFolderOperationStatus paramEnumFileFolderOperationStatus) {
 		Criteria criteria=getCurrentSession().createCriteria(FolderOperationRequest.class);
-		if(!paramEnumFileFolderOperationStatus.equals(FileFolderOperationStatus.ALL))
+		if(!paramEnumFileFolderOperationStatus.equals(EnumFileFolderOperationStatus.ALL))
 			criteria.add(Restrictions.eq("foldStatus", paramEnumFileFolderOperationStatus));
 		return criteria.list();
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<FolderOperationRequest> listFolderOperationRequestByDeviceInfoId(int paramIntDeviceInfoId,FileFolderOperationStatus paramEnumFileFolderOperationStatus) {
-		Criteria criteria = getCurrentSession().createCriteria(FolderOperationRequest.class).add(Restrictions.eq("compId", paramIntDeviceInfoId));
-		if(!paramEnumFileFolderOperationStatus.equals(FileFolderOperationStatus.ALL))
+	public List<FolderOperationRequest> listFolderOperationRequestByDeviceInfoId(int paramIntDeviceInfoId,EnumFileFolderOperationStatus paramEnumFileFolderOperationStatus) {
+		Criteria criteria = getCurrentSession().createCriteria(FolderOperationRequest.class).
+				add(Restrictions.eq("objDeviceInfo.id", paramIntDeviceInfoId));
+		if(!paramEnumFileFolderOperationStatus.equals(EnumFileFolderOperationStatus.ALL))
 			criteria.add(Restrictions.eq("foldStatus", paramEnumFileFolderOperationStatus));
 		return criteria.list();
 	}
