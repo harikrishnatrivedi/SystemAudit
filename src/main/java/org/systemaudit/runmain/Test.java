@@ -24,14 +24,11 @@ public class Test {
 		
 				File file = new File("D:\\JAVADevelopment\\Projects\\SystemAuditWeb\\src\\main\\java\\org\\systemaudit\\model\\FileDetails.java");
 					
-				System.out.println("Before Format : " + file.lastModified());
-			    
-				System.out.println("file.listRoots().toString()"+file.listRoots().toString());
-				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-					
-				System.out.println("After Format : " + sdf.format(file.lastModified()));
+				
+				
 				
 				try {
+					SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 					BasicFileAttributes view = Files.readAttributes(Paths.get(file.getPath()), BasicFileAttributes.class);
 					System.out.println("view.creationTime() : "+sdf.format(view.creationTime().toMillis()));
 					System.out.println("view.lastAccessTime() new : "+ sdf.format(view.lastAccessTime().toMillis()));
@@ -52,12 +49,7 @@ public class Test {
 					e.printStackTrace();
 				}
 				
-				System.out.println("After Format : " + sdf.format(file.lastModified()));
-				
-				System.out.println("After Format : " + sdf.format(file.lastModified()));
-		
-				
-				
+						
 				
 					File objFile = new File("D:\\TestDelete");
 					recursiveDelete(objFile);

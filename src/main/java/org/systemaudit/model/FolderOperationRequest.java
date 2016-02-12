@@ -50,7 +50,6 @@ public class FolderOperationRequest {
 	private String foldOperationRequestedBy;
 
 	@Column(name = "FOLD_OPERATION_REQUESTED_DATETIME", nullable = false)
-	@Size(max = 15)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date foldOperationRequestedDatetime;
 

@@ -3,6 +3,8 @@
  */
 package org.systemaudit.model;
 
+import java.util.Date;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,9 +16,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.joda.time.DateTime;
 
 /**
  * @author harikrishna.trivedi
@@ -58,6 +63,18 @@ public class FileDetails {
 	@Column(name = "FILE_SIZE", nullable = true)
 	private long fileSize;
 
+	@Column(name = "FILE_CREATION_DATE", nullable = true)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date fileCreationDate;
+
+	@Column(name = "FILE_LAST_ACCESS_DATE", nullable = true)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date fileLastAccessDate;
+
+	@Column(name = "FILE_LAST_MODIFIED_DATE", nullable = true)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date fileLastModifiedDate;
+
 	@Column(name = "FILE_STATUS", nullable = false, columnDefinition = "character varying(15) default 'GOOD'")
 	@Enumerated(EnumType.STRING)
 	private EnumFileFolderOperationStatus fileStatus = EnumFileFolderOperationStatus.GOOD;
@@ -69,6 +86,48 @@ public class FileDetails {
 	@ManyToOne
 	@JoinColumn(name = "FILE_SCH_ID", referencedColumnName = "SCH_ID")
 	private ScheduleMaster objScheduleMaster;
+
+	/**
+	 * @return the fileCreationDate
+	 */
+	public Date getFileCreationDate() {
+		return fileCreationDate;
+	}
+
+	/**
+	 * @param fileCreationDate the fileCreationDate to set
+	 */
+	public void setFileCreationDate(Date fileCreationDate) {
+		this.fileCreationDate = fileCreationDate;
+	}
+
+	/**
+	 * @return the fileLastAccessDate
+	 */
+	public Date getFileLastAccessDate() {
+		return fileLastAccessDate;
+	}
+
+	/**
+	 * @param fileLastAccessDate the fileLastAccessDate to set
+	 */
+	public void setFileLastAccessDate(Date fileLastAccessDate) {
+		this.fileLastAccessDate = fileLastAccessDate;
+	}
+
+	/**
+	 * @return the fileLastModifiedDate
+	 */
+	public Date getFileLastModifiedDate() {
+		return fileLastModifiedDate;
+	}
+
+	/**
+	 * @param fileLastModifiedDate the fileLastModifiedDate to set
+	 */
+	public void setFileLastModifiedDate(Date fileLastModifiedDate) {
+		this.fileLastModifiedDate = fileLastModifiedDate;
+	}
 
 	/**
 	 * @return the objScheduleMaster
@@ -85,7 +144,6 @@ public class FileDetails {
 		this.objScheduleMaster = objScheduleMaster;
 	}
 
-	
 	/**
 	 * @return the fileStatus
 	 */
@@ -94,7 +152,8 @@ public class FileDetails {
 	}
 
 	/**
-	 * @param fileStatus the fileStatus to set
+	 * @param fileStatus
+	 *            the fileStatus to set
 	 */
 	public void setFileStatus(EnumFileFolderOperationStatus fileStatus) {
 		this.fileStatus = fileStatus;
@@ -222,8 +281,8 @@ public class FileDetails {
 
 	@Override
 	public String toString() {
-		return "objFileDetails [fileId=" + fileId + ", fileFullPath=" + fileFullPath + ", fileFolderPath=" + fileFolderPath + ", fileName=" + fileName
-				+ ", fileSize=" + fileSize + ", fileExtension=" + fileExtension + ", fileDrive=" + fileDrive
-				+ ", objDeviceInfo=" + objDeviceInfo + "]";
+		return "objFileDetails [fileId=" + fileId + ", fileFullPath=" + fileFullPath + ", fileFolderPath="
+				+ fileFolderPath + ", fileName=" + fileName + ", fileSize=" + fileSize + ", fileExtension="
+				+ fileExtension + ", fileDrive=" + fileDrive + ", objDeviceInfo=" + objDeviceInfo + "]";
 	}
 }

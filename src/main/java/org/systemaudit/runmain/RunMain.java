@@ -14,7 +14,10 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -88,7 +91,8 @@ public class RunMain {
 		} else {
 			runScheduleIfRequired(objDeviceInfo);
 			updateSuspiciousFileDetails(objDeviceInfo.getCompId());
-			moveRequestedFiles(objDeviceInfo);
+			moveRequestedFiles(objDeviceInfo.getCompId(),objDeviceInfo.getCompName());
+			moveRequestedFolders(objDeviceInfo.getCompId(),objDeviceInfo.getCompName());
 			deleteRequestedFiles(objDeviceInfo.getCompId());
 			deleteRequestedFolder(objDeviceInfo.getCompId());
 		}
@@ -113,6 +117,7 @@ public class RunMain {
 
 	private static EnumFileFolderOperationStatus deleteFile(Path paramObjPathToDelete){
 		try {
+			System.out.println("paramObjPathToDelete :::: "+paramObjPathToDelete.toString());
 			Files.delete(paramObjPathToDelete);
 			return EnumFileFolderOperationStatus.DELETEED;
 		} catch (NoSuchFileException x) {
@@ -126,13 +131,15 @@ public class RunMain {
 	
 	private static void deleteRequestedFolder(int paramIntDeviceInfoCompId) {
 		List<FolderOperationRequest> lstObjFolderOperationRequest = objFolderOperationRequestService.listFolderOperationRequestByDeviceInfoId(paramIntDeviceInfoCompId, EnumFileFolderOperationStatus.DELETEREQUEST);
-		FileDetails objFileDetailsToDeleteFilter=new FileDetails();
+		
 		List<FileDetails> lstObjFileDetailsToDelete=null;
 		Path objPath=null;
 		for(FolderOperationRequest objFolderOperationRequest : lstObjFolderOperationRequest){
-			objFileDetailsToDeleteFilter.setFileFolderPath(objFolderOperationRequest.getFoldFullPath());
-			lstObjFileDetailsToDelete=objFileDetailsService.listFileDetailsByFileFilter(objFileDetailsToDeleteFilter);
+			System.out.println("objFolderOperationRequest.getFoldFullPath()="+objFolderOperationRequest.getFoldFullPath()+" :: paramIntDeviceInfoCompId="+paramIntDeviceInfoCompId+" ::lstObjFileDetailsToDelete :::: "+lstObjFileDetailsToDelete);
+			
+			lstObjFileDetailsToDelete=objFileDetailsService.listFileDetailsToDeleteFolderByLastSuccessScheduleData(paramIntDeviceInfoCompId, objFolderOperationRequest.getFoldFullPath());
 			for(FileDetails objFileDetailsToDelete : lstObjFileDetailsToDelete){
+				System.out.println("objFileDetailsToDelete :::::: "+objFileDetailsToDelete);
 				objPath = FileSystems.getDefault().getPath(objFileDetailsToDelete.getFileFullPath());
 				objFileDetailsToDelete.setFileStatus(deleteFile(objPath));
 				objFileDetailsService.updateFileDetails(objFileDetailsToDelete);
@@ -176,14 +183,71 @@ public class RunMain {
         	return false;*/
     }
 	
-	private static void moveRequestedFiles(DeviceInfo paramObjDeviceInfo) {
+	private static void moveRequestedFolders(int paramIntCompId, String paramStrCompName){
+		List<FolderOperationRequest> lstObjFolderOperationRequest = objFolderOperationRequestService.listFolderOperationRequestByDeviceInfoId(paramIntCompId, EnumFileFolderOperationStatus.MOVEREQUEST);
+		FileDetails objFileDetailsToDeleteFilter=new FileDetails();
+		List<FileDetails> lstObjFileDetailsToMove=null;
+		Path objPath=null;
+		
+		DateTime dateForFolder = new DateTime();
+		File newDir = new File(objKeyValueService.getKeyValueByKey(EnumKeyValue.NETWORK_LOC_TO_MOVE.name()).getKvalValue().replaceAll("\\\\", "\\\\\\\\") + paramStrCompName + "\\"
+				+ dateForFolder.getYear() + "-" + dateForFolder.getMonthOfYear() + "-" + dateForFolder.getDayOfMonth()
+				+ "_" + dateForFolder.getHourOfDay() + "-" + dateForFolder.getMinuteOfHour());
+
+		if (lstObjFolderOperationRequest != null && lstObjFolderOperationRequest.size() > 0)
+			if (!newDir.exists()) {
+				try {
+					newDir.mkdir();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					return;
+				}
+			}
+
+		File objFileDestination=null;
+		PrintWriter out = null;
+		
+		for(FolderOperationRequest objFolderOperationRequest : lstObjFolderOperationRequest){
+				try {
+					int i=0;
+
+					do{
+						if(i==0)
+							objFileDestination=new File(newDir.getPath() + "\\" + objFolderOperationRequest.getFoldFullPath().substring(objFolderOperationRequest.getFoldFullPath().lastIndexOf("\\")));
+						else
+							objFileDestination=new File(newDir.getPath() + "\\" + objFolderOperationRequest.getFoldFullPath().substring(objFolderOperationRequest.getFoldFullPath().lastIndexOf("\\"))+"_"+i);
+						i++;
+					}while(objFileDestination.exists());
+					System.out.println("objFolderOperationRequest.getFoldFullPath()"+objFolderOperationRequest.getFoldFullPath()+" ::: objFileDestination.getPath()"+objFileDestination.getPath());
+					FileUtils.copyDirectory(new File(objFolderOperationRequest.getFoldFullPath()), objFileDestination, true);
+					objFolderOperationRequest.setFoldStatus(EnumFileFolderOperationStatus.MOVED);
+
+					try {
+						out = new PrintWriter(new BufferedWriter(new FileWriter(newDir.getPath()+"\\FileDetails.txt", true)));
+						out.println(objFileDestination.getName()+"="+objFolderOperationRequest.getFoldFullPath());
+					}catch (IOException e) {
+					    System.err.println(e);
+					}finally{
+					    if(out != null){
+					        out.close();
+					    }
+					}
+				} catch (Exception ex) {
+					objFolderOperationRequest.setFoldStatus(EnumFileFolderOperationStatus.MOVEFAILED);
+					ex.printStackTrace();
+				}
+				
+			
+			objFolderOperationRequestService.updateFileDetails(objFolderOperationRequest);
+		}
+	}
+	
+	private static void moveRequestedFiles(int paramIntCompId, String paramStrCompName) {
 		List<FileDetails> lstObjDeviceInfo = objFileDetailsService
-				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramObjDeviceInfo.getCompId(), EnumFileFolderOperationStatus.MOVEREQUEST);
+				.getSuspiciousFileDetailsByDeviceInfoIdAndStatus(paramIntCompId, EnumFileFolderOperationStatus.MOVEREQUEST);
 
 		DateTime dateForFolder = new DateTime();
-//		KeyValue objKeyValueTest= objKeyValueService.getKeyValueByKey(EnumKeyValue.NETWORK_LOC_TO_MOVE.name());
-	//	System.out.println("objKeyValueTest : "+objKeyValueTest);
-		File newDir = new File(objKeyValueService.getKeyValueByKey(EnumKeyValue.NETWORK_LOC_TO_MOVE.name()).getKvalValue().replaceAll("\\\\", "\\\\\\\\") + paramObjDeviceInfo.getCompName() + "\\"
+		File newDir = new File(objKeyValueService.getKeyValueByKey(EnumKeyValue.NETWORK_LOC_TO_MOVE.name()).getKvalValue().replaceAll("\\\\", "\\\\\\\\") + paramStrCompName + "\\"
 				+ dateForFolder.getYear() + "-" + dateForFolder.getMonthOfYear() + "-" + dateForFolder.getDayOfMonth()
 				+ "_" + dateForFolder.getHourOfDay() + "-" + dateForFolder.getMinuteOfHour());
 
@@ -200,23 +264,23 @@ public class RunMain {
 		File objFileDestination=null;
 		PrintWriter out = null;
 		
-		for (FileDetails objFileDetails : lstObjDeviceInfo) {
+		for (FileDetails objFileDetailsToMove : lstObjDeviceInfo) {
 			try {
 				int i=0;
 
 				do{
 					if(i==0)
-						objFileDestination=new File(newDir.getPath() + "\\" + objFileDetails.getFileName());
+						objFileDestination=new File(newDir.getPath() + "\\" + objFileDetailsToMove.getFileName());
 					else
-						objFileDestination=new File(newDir.getPath() + "\\" + objFileDetails.getFileName()+"_"+i);
+						objFileDestination=new File(newDir.getPath() + "\\" + objFileDetailsToMove.getFileName()+"_"+i);
 					i++;
 				}while(objFileDestination.exists());
-				FileUtils.copyFile(new File(objFileDetails.getFileFullPath()), objFileDestination);
-				objFileDetails.setFileStatus(EnumFileFolderOperationStatus.MOVED);
+				FileUtils.copyFile(new File(objFileDetailsToMove.getFileFullPath()), objFileDestination, true);
+				objFileDetailsToMove.setFileStatus(EnumFileFolderOperationStatus.MOVED);
 
 				try {
 					out = new PrintWriter(new BufferedWriter(new FileWriter(newDir.getPath()+"\\FileDetails.txt", true)));
-					out.println(objFileDestination.getName()+"="+objFileDestination.getPath());
+					out.println(objFileDestination.getName()+"="+objFileDetailsToMove.getFileFullPath());
 				}catch (IOException e) {
 				    System.err.println(e);
 				}finally{
@@ -225,10 +289,10 @@ public class RunMain {
 				    }
 				}
 			} catch (Exception ex) {
-				objFileDetails.setFileStatus(EnumFileFolderOperationStatus.MOVEFAILED);
+				objFileDetailsToMove.setFileStatus(EnumFileFolderOperationStatus.MOVEFAILED);
 				ex.printStackTrace();
 			}
-			objFileDetailsService.updateFileDetails(objFileDetails);
+			objFileDetailsService.updateFileDetails(objFileDetailsToMove);
 		}
 	}
 
@@ -340,7 +404,7 @@ public class RunMain {
 		paramObjDeviceInfo.setLstObjFileDetails(lstObjFileDetails);
 		return paramObjDeviceInfo;
 	}
-
+	
 	private static void list(File f, String root, DeviceInfo paramObjDeviceInfo,
 			ScheduleMaster paramObjScheduleMaster, String[] suspiciousFolderKeys, String[] suspiciousExtension, String paramStrDrive) {
 		if (f.isFile()) {
@@ -367,8 +431,12 @@ public class RunMain {
 				
 				
 				
+				
 				objFileDetails.setObjScheduleMaster(paramObjScheduleMaster);
 				objFileDetails.setFileFullPath(f.getAbsolutePath());
+				objFileDetails.setFileCreationDate(new DateTime(Files.readAttributes(Paths.get(f.getPath()), BasicFileAttributes.class).creationTime().toMillis()).toDate());
+				objFileDetails.setFileLastAccessDate(new DateTime(Files.readAttributes(Paths.get(f.getPath()), BasicFileAttributes.class).lastAccessTime().toMillis()).toDate());
+				objFileDetails.setFileLastModifiedDate(new DateTime(Files.readAttributes(Paths.get(f.getPath()), BasicFileAttributes.class).lastModifiedTime().toMillis()).toDate());
 				objFileDetails.setFileFolderPath(f.getParent());
 				for(String folderKey : suspiciousFolderKeys){
 					if(objFileDetails.getFileFolderPath().toUpperCase().indexOf(folderKey.toUpperCase())>-1 && root.toUpperCase().indexOf(paramStrDrive)>-1)

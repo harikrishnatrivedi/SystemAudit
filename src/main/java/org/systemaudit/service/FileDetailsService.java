@@ -19,6 +19,8 @@ public abstract interface FileDetailsService
   
   public abstract List<FileDetails> listFileDetailsByFileFilter(FileDetails objFileDetails);
   
+  public abstract List<FileDetails> listFileDetailsToDeleteFolderByLastSuccessScheduleData(int paramIntCompId, String paramStrFolderPath);
+  
   public abstract FileDetails getFileDetailsById(int paramIntFileDetailsId);
   
   public abstract void removeFileDetails(int paramIntFileDetailsId);

@@ -36,6 +36,10 @@ public class FileDetailsServiceImpl implements FileDetailsService {
 		return this.fileDetailsDAO.listFileDetailsByFileFilter(objFileDetails);
 	}
 	
+	public List<FileDetails> listFileDetailsToDeleteFolderByLastSuccessScheduleData(int paramIntCompId, String paramStrFolderPath){
+		return this.fileDetailsDAO.listFileDetailsToDeleteFolderByLastSuccessScheduleData(paramIntCompId, paramStrFolderPath);
+	}
+	
 	public FileDetails getFileDetailsById(int paramIntFileDetailsId) {
 		return this.fileDetailsDAO.getFileDetailsById(paramIntFileDetailsId);
 	}
